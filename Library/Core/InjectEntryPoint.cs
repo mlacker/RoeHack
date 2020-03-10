@@ -36,26 +36,26 @@ namespace RoeHack.Library.Core
             var d3D11_1Loaded = GetModuleHandle("d3d11_1.dll");
             if (d3D9Loaded != IntPtr.Zero)
             {
-                server.SendMessage("使用dx9");
-                ((IDirectXHooker)new DirectXHooker.DriectX9Hooker(parameter)).Hooking();
+                logger.Debug("使用dx9");
+                ((IDirectXHooker)new DirectXHooker.DriectX9Hooker(parameter, logger)).Hooking();
             }
             if (d3D10Loaded != IntPtr.Zero)
             {
-                server.SendMessage("使用dx10");
+                logger.Debug("使用dx10");
             }
             if (d3D10_1Loaded != IntPtr.Zero)
             {
-                server.SendMessage("使用dx10_1");
+                logger.Debug("使用dx10_1");
             }
             if (d3D11Loaded != IntPtr.Zero)
             {
                 ((IDirectXHooker)new DirectXHooker.DriectX11Hooker(parameter)).Hooking();
-                server.SendMessage("使用dx11_1");
+                logger.Debug("使用dx11_1");
             }
             if (d3D11_1Loaded != IntPtr.Zero)
             {
                 ((IDirectXHooker)new DirectXHooker.DriectX11Hooker(parameter)).Hooking();
-                server.SendMessage("使用dx11_1");
+                logger.Debug("使用dx11_1");
             }
 
 
