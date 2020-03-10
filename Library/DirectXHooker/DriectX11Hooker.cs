@@ -355,8 +355,8 @@ namespace RoeHack.Library.DirectXHooker
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            DXGISwapChain_PresentHookPrimitive.Dispose();
+            DXGIdeviceContext_DrawIndexedPrimitive.Dispose();
         }
-
     }
 }
