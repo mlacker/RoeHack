@@ -7,16 +7,16 @@ namespace RoeHack.Library.Core
     /// </summary>
     public class ServerInterface : MarshalByRefObject
     {
-        public void IsInstalled(int clientPid)
-        {
-            Console.WriteLine($"injector has injected payload into process {clientPid}.");
-        }
-
         /// <summary>
         /// Called to confirm that the IPC channel is still open / host application has not closed
         /// </summary>
         public void Ping()
         {
+        }
+
+        public void IsInstalled(int processId)
+        {
+            Console.WriteLine($"Injector has injected payload into process {processId}.");
         }
 
         public void SendMessage(string message)

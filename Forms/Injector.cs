@@ -8,7 +8,7 @@ namespace RoeHack.Forms
 {
     public class Injector
     {
-        //public Parameter Parameter { get; private set; } = new Parameter();
+        public Parameter Parameter { get; private set; } = new Parameter();
 
         public void Inject(string processName)
         {
@@ -16,7 +16,6 @@ namespace RoeHack.Forms
             {
                 throw new AppException("请以管理员身份运行程序.");
             }
-            var Parameter = new Parameter();
 
             var process = Process.GetProcessesByName(processName).SingleOrDefault();
 

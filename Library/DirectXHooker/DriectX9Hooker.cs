@@ -1,5 +1,4 @@
-﻿using EasyHook;
-using RoeHack.Library.Core;
+﻿using RoeHack.Library.Core;
 using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
@@ -8,37 +7,17 @@ using System.Windows.Forms;
 
 namespace RoeHack.Library.DirectXHook
 {
-    public class Hook<TDelegate> : IDisposable where TDelegate : class
+
+    public class DriectX9Hooker : IDirectXHooker
     {
-        private LocalHook localHook;
-
-        public Hook(IntPtr target, Delegate proxy, DriectX9Hook callback)
-        {
-            Target = Marshal.GetDelegateForFunctionPointer<TDelegate>(target);
-
-            localHook = LocalHook.Create(target, proxy, callback);
-            localHook.ThreadACL.SetInclusiveACL(new int[] { 0 });
-        }
-
-        public TDelegate Target { get; private set; }
-
-        public void Dispose()
-        {
-            localHook.ThreadACL.SetExclusiveACL(new int[] { 0 });
-            localHook.Dispose();
-        }
-    }
-
-    public class DriectX9Hook : IDirectXHook, IDisposable
-    {
-        private Parameter parameter;
-        private Hook<Direct3D9Device_DrawIndexedPrimitiveDelegate> drawIndexedPrimitiveHook;
-        private Hook<Direct3D9Device_PresentDelegate> presentHook;
+        private readonly Parameter parameter;
+        private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
+        private HookWrapper<PresentDelegate> hookPresent;
 
         private bool firsted = true;
         private Font font;
 
-        public DriectX9Hook(Parameter parameter)
+        public DriectX9Hooker(Parameter parameter)
         {
             this.parameter = parameter;
         }
@@ -62,23 +41,20 @@ namespace RoeHack.Library.DirectXHook
         delegate int Direct3D9Device_SetTextureDelegate(IntPtr devicePtr, uint Sampler, IntPtr pTexture);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        unsafe delegate int Direct3D9Device_PresentDelegate(IntPtr devicePtr, SharpDX.Rectangle* pSourceRect, SharpDX.Rectangle* pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion);
+        delegate int PresentDelegate(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion);
 
 
         public void Hooking()
         {
             var address = GetAddress();
 
-            drawIndexedPrimitiveHook = new Hook<Direct3D9Device_DrawIndexedPrimitiveDelegate>(
+            hookDrawIndexedPrimitive = new HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate>(
                 address[82], new Direct3D9Device_DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
 
-            unsafe
-            {
-                presentHook = new Hook<Direct3D9Device_PresentDelegate>(
-                    address[17],
-                    new Direct3D9Device_PresentDelegate(PresentHook),
-                    this);
-            }
+            hookPresent = new HookWrapper<PresentDelegate>(
+                address[17],
+                new PresentDelegate(PresentHook),
+                this);
         }
 
 
@@ -110,10 +86,10 @@ namespace RoeHack.Library.DirectXHook
                 }
             }
 
-            return drawIndexedPrimitiveHook.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
+            return hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
         }
 
-        private unsafe int PresentHook(IntPtr devicePtr, SharpDX.Rectangle* pSourceRect, SharpDX.Rectangle* pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
+        private int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
         {
             //_isUsingPresent = true;
             Device device = (Device)devicePtr;
@@ -148,7 +124,7 @@ namespace RoeHack.Library.DirectXHook
             //}
             //WeaponEspInfoList.Clear();
 
-            return presentHook.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+            return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
         }
 
         private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
@@ -163,7 +139,8 @@ namespace RoeHack.Library.DirectXHook
 
         public void Dispose()
         {
-            drawIndexedPrimitiveHook.Dispose();
+            hookDrawIndexedPrimitive.Dispose();
+            hookPresent.Dispose();
         }
 
         #region Moved

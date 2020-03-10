@@ -10,9 +10,12 @@ namespace FileMonitor
         {
             Injector injector = new Injector();
 
+            var processName = "notepad";
+            processName = "应用程序";
+
             try
             {
-                injector.Inject("notepad");
+                injector.Inject(processName);
             }
             catch (AppException ex)
             {

@@ -65,9 +65,9 @@
     <Compile Include="Core\AppException.cs" />
     <Compile Include="Core\ServerInterface.cs" />
     <Compile Include="Core\InjectEntryPoint.cs" />
-    <Compile Include="DirectXHook\DriectX9Hook.cs" />
-    <Compile Include="Core\DriectXEntryPoint.cs" />
-    <Compile Include="DirectXHook\IDirectXHook.cs" />
+    <Compile Include="DirectXHooker\DriectX9Hooker.cs" />
+    <Compile Include="Core\HookWrapper.cs" />
+    <Compile Include="DirectXHooker\IDirectXHooker.cs" />
     <Compile Include="Core\Parameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
