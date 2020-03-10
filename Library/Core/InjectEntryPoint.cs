@@ -11,7 +11,7 @@ namespace RoeHack.Library.Core
     {
         private readonly ServerInterface server;
         private readonly IpcConnectLogger logger;
-
+        IDirectXHooker hooker;
         public InjectEntryPoint(RemoteHooking.IContext context, Parameter parameter)
         {
             server = RemoteHooking.IpcConnectClient<ServerInterface>(parameter.ChannelName);
