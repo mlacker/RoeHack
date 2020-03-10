@@ -11,7 +11,7 @@ namespace FileMonitor
             Injector injector = new Injector();
 
             var processName = "notepad";
-            processName = "应用程序";
+            processName = "应用程序1";
 
             try
             {
