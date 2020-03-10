@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace RoeHack.Library.DirectXHook
+namespace RoeHack.Library.Core
 {
     public class HookWrapper<TDelegate> : IDisposable where TDelegate : class
     {

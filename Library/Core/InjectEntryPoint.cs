@@ -15,10 +15,7 @@ namespace RoeHack.Library.Core
         public InjectEntryPoint(RemoteHooking.IContext context, Parameter parameter)
         {
             server = RemoteHooking.IpcConnectClient<ServerInterface>(parameter.ChannelName);
-
             server.Ping();
-
-            hooker = new DirectXHook.DriectX9Hooker(parameter);
         }
 
         [DllImport("kernel32.dll")]
@@ -26,16 +23,18 @@ namespace RoeHack.Library.Core
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
-
+           
+            server.IsInstalled(RemoteHooking.GetCurrentProcessId());
 
             var d3D9Loaded = GetModuleHandle("d3d9.dll");
             var d3D10Loaded = GetModuleHandle("d3d10.dll");
             var d3D10_1Loaded = GetModuleHandle("d3d10_1.dll");
             var d3D11Loaded = GetModuleHandle("d3d11.dll");
             var d3D11_1Loaded = GetModuleHandle("d3d11_1.dll");
-            if (d3D9Loaded!=IntPtr.Zero)
+            if (d3D9Loaded != IntPtr.Zero)
             {
                 server.SendMessage("使用dx9");
+                ((IDirectXHooker)new DirectXHooker.DriectX9Hooker(parameter)).Hooking();
             }
             if (d3D10Loaded != IntPtr.Zero)
             {
@@ -47,20 +46,17 @@ namespace RoeHack.Library.Core
             }
             if (d3D11Loaded != IntPtr.Zero)
             {
+                ((IDirectXHooker)new DirectXHooker.DriectX11Hooker(parameter)).Hooking();
                 server.SendMessage("使用dx11_1");
             }
             if (d3D11_1Loaded != IntPtr.Zero)
             {
+                ((IDirectXHooker)new DirectXHooker.DriectX11Hooker(parameter)).Hooking();
                 server.SendMessage("使用dx11_1");
             }
 
-            server.IsInstalled(RemoteHooking.GetCurrentProcessId());
-
-            hooker.Hooking();
 
             server.SendMessage("All hooks installed");
-
-
 
             try
             {

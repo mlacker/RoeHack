@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace RoeHack.Library.DirectXHook
+namespace RoeHack.Library.DirectXHooker
 {
 
     public class DriectX9Hooker : IDirectXHooker

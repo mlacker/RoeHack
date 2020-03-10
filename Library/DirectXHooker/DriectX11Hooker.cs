@@ -1,5 +1,5 @@
 ﻿using RoeHack.Library.Core;
-using RoeHack.Library.DirectXHook;
+using RoeHack.Library.DirectXHooker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +12,7 @@ using SharpDX;
 using SharpDX.Direct3D;
 using System.Windows.Forms;
 using System.Drawing;
+using RoeHack.Library.DirectXHooker.Dx11;
 
 namespace RoeHack.Library.DirectXHooker
 {
@@ -257,6 +258,12 @@ namespace RoeHack.Library.DirectXHooker
                 depthStencilStateReadonly = new DepthStencilState(deviceContext.Device, stencilDesc);
             }
 
+            Dx11.DXFont dXFont = new Dx11.DXFont(device, deviceContext);
+            dXFont.Initialize("宋体", 14, FontStyle.Bold, true);
+            DXSprite dXSprite = new DXSprite(device, deviceContext);
+            dXSprite.DrawString(50, 50, "ceshi", 255, 255, 233, 233, dXFont);
+
+
             swapChain.Present(syncInterval, flags);
             return SharpDX.Result.Ok.Code;
         }
@@ -326,6 +333,8 @@ namespace RoeHack.Library.DirectXHooker
                 }
             }
         }
+
+
 
 
         public static SharpDX.DXGI.SwapChainDescription CreateSwapChainDescription(IntPtr windowHandle)
