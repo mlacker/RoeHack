@@ -1,4 +1,5 @@
 ﻿using RoeHack.Library.Core;
+using RoeHack.Library.Core.Logging;
 using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
@@ -11,15 +12,17 @@ namespace RoeHack.Library.DirectXHooker
     public class DriectX9Hooker : IDirectXHooker
     {
         private readonly Parameter parameter;
+        private readonly ILog logger;
         private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
 
         private bool firsted = true;
         private Font font;
 
-        public DriectX9Hooker(Parameter parameter)
+        public DriectX9Hooker(Parameter parameter, ILog logger)
         {
             this.parameter = parameter;
+            this.logger = logger;
         }
 
 
@@ -52,9 +55,7 @@ namespace RoeHack.Library.DirectXHooker
                 address[82], new Direct3D9Device_DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
 
             hookPresent = new HookWrapper<PresentDelegate>(
-                address[17],
-                new PresentDelegate(PresentHook),
-                this);
+                address[17], new PresentDelegate(PresentHook), this);
         }
 
 
@@ -91,11 +92,7 @@ namespace RoeHack.Library.DirectXHooker
 
         private int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
         {
-            //_isUsingPresent = true;
             Device device = (Device)devicePtr;
-
-            //DoCaptureRenderTarget(device, "PresentHook");
-            //SetColor(devicePtr, 1);
 
             if (firsted)
             {
@@ -117,12 +114,6 @@ namespace RoeHack.Library.DirectXHooker
             }
 
             this.font.DrawText(null, "挂载成功", 50, 50, SharpDX.Color.Red);
-
-            //foreach (var item in WeaponEspInfoList)
-            //{
-            //    this.Font.DrawText(null, item.RealDistance + "mi", (int)item.pOutX, (int)item.pOutY - 20, SharpDX.Color.Red);
-            //}
-            //WeaponEspInfoList.Clear();
 
             return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
         }

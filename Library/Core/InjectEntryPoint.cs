@@ -1,4 +1,5 @@
 ﻿using EasyHook;
+using RoeHack.Library.Core.Logging;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -8,6 +9,7 @@ namespace RoeHack.Library.Core
     public class InjectEntryPoint : IEntryPoint, IDisposable
     {
         private readonly ServerInterface server;
+        private readonly IpcConnectLogger logger;
         private IDirectXHooker hooker;
 
         public object NativeMethods { get; private set; }
@@ -15,6 +17,8 @@ namespace RoeHack.Library.Core
         public InjectEntryPoint(RemoteHooking.IContext context, Parameter parameter)
         {
             server = RemoteHooking.IpcConnectClient<ServerInterface>(parameter.ChannelName);
+            logger = new IpcConnectLogger(server);
+
             server.Ping();
         }
 
@@ -23,8 +27,7 @@ namespace RoeHack.Library.Core
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
-           
-            server.IsInstalled(RemoteHooking.GetCurrentProcessId());
+            logger.Debug($"Injector has injected payload into process {RemoteHooking.GetCurrentProcessId()}.");
 
             var d3D9Loaded = GetModuleHandle("d3d9.dll");
             var d3D10Loaded = GetModuleHandle("d3d10.dll");
@@ -56,7 +59,7 @@ namespace RoeHack.Library.Core
             }
 
 
-            server.SendMessage("All hooks installed");
+            logger.Debug("All hooks installed");
 
             try
             {
