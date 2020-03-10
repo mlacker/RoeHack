@@ -1,12 +1,28 @@
-﻿using System;
+﻿using RoeHack.Library.Core.Logging;
+using System;
 
 namespace RoeHack.Library.Core
 {
     /// <summary>
     /// Provides an interface for communicating from the client (target) to the server (injector)
     /// </summary>
-    public class ServerInterface : MarshalByRefObject
+    public class ServerInterface : MarshalByRefObject, IIpcLoggerInterface
     {
+        public static ServerInterface Instance { get; private set; }
+
+        private ILog logger;
+
+        public ServerInterface()
+        {
+            Instance = this;
+            logger = new ConsoleLogger ("ServerInterface", LogLevel.Debug);
+        }
+
+        public ILog Logger
+        {
+            set { logger = value; }
+        }
+
         /// <summary>
         /// Called to confirm that the IPC channel is still open / host application has not closed
         /// </summary>
@@ -14,14 +30,9 @@ namespace RoeHack.Library.Core
         {
         }
 
-        public void IsInstalled(int processId)
+        public void WriteInternal(LogLevel level, string message, Exception exception)
         {
-            Console.WriteLine($"Injector has injected payload into process {processId}.");
-        }
-
-        public void SendMessage(string message)
-        {
-            Console.WriteLine(message);
+            logger.LogLevel(level, message, exception);
         }
     }
 }
