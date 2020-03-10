@@ -17,10 +17,12 @@ namespace RoeHack.Library.DirectXHooker
         private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
         private HookWrapper<Direct3D9Device_SetTextureDelegate> hookSetTexture;
+        private HookWrapper<Direct3D9Device_SetStreamSourceDelegate> hookSetStreamSource;
 
         private bool firsted = true;
         private SharpDX.Direct3D9.Font font;
         private int vSize;
+        private uint stride;
 
         protected SharpDX.Direct3D9.Texture textureBack { get; set; }
         protected SharpDX.Direct3D9.Texture textureFront { get; set; }
@@ -57,35 +59,27 @@ namespace RoeHack.Library.DirectXHooker
             hookSetTexture = new HookWrapper<Direct3D9Device_SetTextureDelegate>(
                 address[65], new Direct3D9Device_SetTextureDelegate(SetTextureHook),
                 this);
-        }
 
+            hookSetStreamSource = new HookWrapper<Direct3D9Device_SetStreamSourceDelegate>(
+                address[100], new Direct3D9Device_SetStreamSourceDelegate(SetStreamSourceHook),
+                this);
+        }
 
         private int DrawIndexedPrimitiveHook(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount)
         {
             var device = new Device(devicePtr);
-
-            if (device != null)
+            if (IsPlayers((int)stride, vSize, numVertices, primCount))
             {
-                device.GetStreamSource(0, out var pStreamData, out var iOffsetInBytes, out var iStride);
-                if (pStreamData != null)
-                {
-                    pStreamData.Dispose();
-                }
+                //设置墙后颜色
+                device.SetRenderState(RenderState.Lighting, false);
+                device.SetRenderState(RenderState.ZEnable, false);
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                device.SetTexture(0, textureBack);
+                hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
 
-                if (IsPlayers(iStride, vSize, numVertices, primCount))
-                {
-                    //设置墙后颜色
-                    device.SetRenderState(RenderState.Lighting, false);
-                    device.SetRenderState(RenderState.ZEnable, false);
-                    device.SetRenderState(RenderState.FillMode, FillMode.Solid);
-                    device.SetTexture(0, textureBack);
-                    hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
-
-                    device.SetRenderState(RenderState.ZEnable, true);
-                    device.SetRenderState(RenderState.FillMode, FillMode.Solid);
-                    device.SetTexture(0, textureFront);
-                    return ResultCode.Success.Code;
-                }
+                device.SetRenderState(RenderState.ZEnable, true);
+                device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                device.SetTexture(0, textureFront); hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
             }
 
             return hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
@@ -93,8 +87,6 @@ namespace RoeHack.Library.DirectXHooker
 
         private int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
         {
-            Device device = (Device)devicePtr;
-
             if (firsted)
             {
                 SetFont(devicePtr);
@@ -125,7 +117,14 @@ namespace RoeHack.Library.DirectXHooker
             return hookSetTexture.Target(devicePtr, Sampler, pTexture);
         }
 
-
+        private int SetStreamSourceHook(IntPtr devicePtr, uint StreamNumber, IntPtr pStreamData, uint OffsetInBytes, uint sStride)
+        {
+            if (StreamNumber == 0)
+            {
+                this.stride = sStride;
+            }
+            return hookSetStreamSource.Target(devicePtr, StreamNumber, pStreamData, OffsetInBytes, sStride);
+        }
 
         void SetFont(IntPtr devicePtr)
         {
@@ -166,7 +165,7 @@ namespace RoeHack.Library.DirectXHooker
 
         private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
         {
-            if (stride == 72 && vSize > 1825 && vSize < 1900)
+            if (stride == 72 && vSize > 1000&& vSize < 3025)
             {
                 return true;
             }
