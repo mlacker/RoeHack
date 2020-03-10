@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace RoeHack.Properties
+namespace RoeHack.Forms.Properties
 {
 
 
