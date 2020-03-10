@@ -38,6 +38,9 @@
     <Reference Include="SharpDX, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.4.2.0\lib\net45\SharpDX.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.Direct3D11, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDX.Direct3D11.4.2.0\lib\net45\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX.Direct3D12, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpDX.Direct3D12.4.2.0\lib\net45\SharpDX.Direct3D12.dll</HintPath>
     </Reference>
@@ -52,6 +55,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
@@ -65,6 +69,7 @@
     <Compile Include="Core\AppException.cs" />
     <Compile Include="Core\ServerInterface.cs" />
     <Compile Include="Core\InjectEntryPoint.cs" />
+    <Compile Include="DirectXHooker\DriectX11Hooker.cs" />
     <Compile Include="DirectXHooker\DriectX9Hooker.cs" />
     <Compile Include="Core\HookWrapper.cs" />
     <Compile Include="DirectXHooker\IDirectXHooker.cs" />

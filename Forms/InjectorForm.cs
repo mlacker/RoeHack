@@ -22,7 +22,7 @@ namespace RoeHack.Forms
 
         private void btnEnable_Click(object sender, EventArgs e)
         {
-            injector.Inject("应用程序");
+            injector.Inject("hl");
             //injector.Inject("Europa_Client");
         }
     }
