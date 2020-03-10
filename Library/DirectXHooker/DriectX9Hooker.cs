@@ -3,6 +3,7 @@ using RoeHack.Library.Core.Logging;
 using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -15,9 +16,14 @@ namespace RoeHack.Library.DirectXHooker
         private readonly ILog logger;
         private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
+        private HookWrapper<Direct3D9Device_SetTextureDelegate> hookSetTexture;
 
         private bool firsted = true;
-        private Font font;
+        private SharpDX.Direct3D9.Font font;
+        private int vSize;
+
+        protected SharpDX.Direct3D9.Texture textureBack { get; set; }
+        protected SharpDX.Direct3D9.Texture textureFront { get; set; }
 
         public DriectX9Hooker(Parameter parameter, ILog logger)
         {
@@ -25,15 +31,6 @@ namespace RoeHack.Library.DirectXHooker
             this.logger = logger;
         }
 
-
-        // STDMETHOD(DrawIndexedPrimitive)(
-        //     THIS_ D3DPRIMITIVETYPE,
-        //     INT BaseVertexIndex,
-        //     UINT MinVertexIndex,
-        //     UINT NumVertices,
-        //     UINT startIndex,
-        //     UINT primCount
-        // )
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
         public delegate int Direct3D9Device_DrawIndexedPrimitiveDelegate(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount);
 
@@ -56,6 +53,10 @@ namespace RoeHack.Library.DirectXHooker
 
             hookPresent = new HookWrapper<PresentDelegate>(
                 address[17], new PresentDelegate(PresentHook), this);
+
+            hookSetTexture = new HookWrapper<Direct3D9Device_SetTextureDelegate>(
+                address[65], new Direct3D9Device_SetTextureDelegate(SetTextureHook),
+                this);
         }
 
 
@@ -71,18 +72,18 @@ namespace RoeHack.Library.DirectXHooker
                     pStreamData.Dispose();
                 }
 
-                if (IsPlayers(iStride, iOffsetInBytes, numVertices, primCount))
+                if (IsPlayers(iStride, vSize, numVertices, primCount))
                 {
                     //设置墙后颜色
-                    //device.SetRenderState(RenderState.Lighting, false);
-                    //device.SetRenderState(RenderState.ZEnable, false);
-                    //device.SetRenderState(RenderState.FillMode, FillMode.Solid);
-                    //device.SetTexture(0, textureBack);
-                    //drawIndexedPrimitiveHook.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
+                    device.SetRenderState(RenderState.Lighting, false);
+                    device.SetRenderState(RenderState.ZEnable, false);
+                    device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                    device.SetTexture(0, textureBack);
+                    hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
 
-                    //device.SetRenderState(RenderState.ZEnable, true);
-                    //device.SetRenderState(RenderState.FillMode, FillMode.Solid);
-                    //device.SetTexture(0, textureFront);
+                    device.SetRenderState(RenderState.ZEnable, true);
+                    device.SetRenderState(RenderState.FillMode, FillMode.Solid);
+                    device.SetTexture(0, textureFront);
                     return ResultCode.Success.Code;
                 }
             }
@@ -96,20 +97,8 @@ namespace RoeHack.Library.DirectXHooker
 
             if (firsted)
             {
-                this.font = new Font(device, new FontDescription()
-                {
-                    Height = 40,
-                    FaceName = "Arial",
-                    Italic = false,
-                    Width = 0,
-                    MipLevels = 1,
-                    CharacterSet = FontCharacterSet.Default,
-                    OutputPrecision = FontPrecision.Default,
-                    Quality = FontQuality.Antialiased,
-                    PitchAndFamily = FontPitchAndFamily.Default | FontPitchAndFamily.DontCare,
-                    Weight = FontWeight.Bold
-                });
-
+                SetFont(devicePtr);
+                SetColor(devicePtr);
                 firsted = false;
             }
 
@@ -118,9 +107,66 @@ namespace RoeHack.Library.DirectXHooker
             return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
         }
 
+        private int SetTextureHook(IntPtr devicePtr, uint Sampler, IntPtr pTexture)
+        {
+            var device = new Device(devicePtr);
+
+            var vShader = device.VertexShader;
+            if (vShader != null)
+            {
+                if (vShader.Function.BufferSize != null)
+                {
+                    this.vSize = vShader.Function.BufferSize;
+                    vShader.Function.Dispose();
+                }
+                vShader.Dispose();
+            }
+
+            return hookSetTexture.Target(devicePtr, Sampler, pTexture);
+        }
+
+
+
+        void SetFont(IntPtr devicePtr)
+        {
+            this.font = new SharpDX.Direct3D9.Font((Device)devicePtr, new FontDescription()
+            {
+                Height = 40,
+                FaceName = "Arial",
+                Italic = false,
+                Width = 0,
+                MipLevels = 1,
+                CharacterSet = FontCharacterSet.Default,
+                OutputPrecision = FontPrecision.Default,
+                Quality = FontQuality.Antialiased,
+                PitchAndFamily = FontPitchAndFamily.Default | FontPitchAndFamily.DontCare,
+                Weight = FontWeight.Bold
+            });
+        }
+
+        void SetColor(IntPtr devicePtr)
+        {
+            int _texWidth = 1, _texHeight = 1;
+            Bitmap bmFront = new Bitmap(_texWidth, _texHeight);
+            Graphics gFront = Graphics.FromImage(bmFront); //创建b1的Graphics
+            gFront.FillRectangle(Brushes.Gold, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            string fileNameFront = "..//Front.jpg";
+            bmFront.Save(fileNameFront);
+
+            Bitmap bmBack = new Bitmap(_texWidth, _texHeight);
+            Graphics gBack = Graphics.FromImage(bmBack); //创建b1的Graphics
+            gBack.FillRectangle(Brushes.Red, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            string fileNameBack = "..//back.jpg";
+            bmBack.Save(fileNameBack);
+
+            textureBack = Texture.FromFile((Device)devicePtr, fileNameBack);
+            textureFront = Texture.FromFile((Device)devicePtr, fileNameFront);
+
+        }
+
         private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
         {
-            if (stride == 72)
+            if (stride == 72 && vSize > 1825 && vSize < 1900)
             {
                 return true;
             }
@@ -132,6 +178,7 @@ namespace RoeHack.Library.DirectXHooker
         {
             hookDrawIndexedPrimitive.Dispose();
             hookPresent.Dispose();
+            hookSetTexture.Dispose();
         }
 
         #region Moved

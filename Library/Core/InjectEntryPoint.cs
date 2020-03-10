@@ -10,7 +10,6 @@ namespace RoeHack.Library.Core
     {
         private readonly ServerInterface server;
         private readonly IpcConnectLogger logger;
-        private IDirectXHooker hooker;
 
         public object NativeMethods { get; private set; }
 
@@ -81,8 +80,6 @@ namespace RoeHack.Library.Core
 
         public void Dispose()
         {
-            // Remove hooks
-            hooker.Dispose();
 
             // Finalise cleanup of hooks
             LocalHook.Release();
