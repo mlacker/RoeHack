@@ -300,7 +300,6 @@ namespace RoeHack.Library.DirectXHooker
             SharpDX.Direct3D11.DeviceContext deviceContext;
             using (var renderForm = new Form())
             {
-                server.SendMessage("All hooks installed");
                 SharpDX.Direct3D11.Device.CreateWithSwapChain(
                    DriverType.Hardware,
                    DeviceCreationFlags.None,
