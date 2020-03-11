@@ -10,8 +10,7 @@ namespace FileMonitor
         {
             Injector injector = new Injector();
 
-            var processName = "notepad";
-            processName = "Europa_Client";
+            var processName = "Europa_Client";
 
             try
             {

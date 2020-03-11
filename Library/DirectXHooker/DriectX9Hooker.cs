@@ -14,6 +14,7 @@ namespace RoeHack.Library.DirectXHooker
     {
         private readonly Parameter parameter;
         private readonly ILog logger;
+
         private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
         private HookWrapper<Direct3D9Device_SetTextureDelegate> hookSetTexture;
@@ -24,8 +25,8 @@ namespace RoeHack.Library.DirectXHooker
         private int vSize;
         private uint stride;
 
-        protected SharpDX.Direct3D9.Texture textureBack { get; set; }
-        protected SharpDX.Direct3D9.Texture textureFront { get; set; }
+        private Texture textureBack;
+        private Texture textureFront;
 
         public DriectX9Hooker(Parameter parameter, ILog logger)
         {
@@ -65,7 +66,7 @@ namespace RoeHack.Library.DirectXHooker
                 this);
         }
 
-        private int DrawIndexedPrimitiveHook(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount)
+        public int DrawIndexedPrimitiveHook(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount)
         {
             var device = new Device(devicePtr);
             if (IsPlayers((int)stride, vSize, numVertices, primCount))
@@ -85,21 +86,21 @@ namespace RoeHack.Library.DirectXHooker
             return hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
         }
 
-        private int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
+        public int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
         {
             if (firsted)
             {
+                firsted = false;
                 SetFont(devicePtr);
                 SetColor(devicePtr);
-                firsted = false;
             }
 
-            this.font.DrawText(null, "挂载成功", 50, 50, SharpDX.Color.Red);
+            //this.font.DrawText(null, "挂载成功", 50, 50, SharpDX.Color.Red);
 
             return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
         }
 
-        private int SetTextureHook(IntPtr devicePtr, uint Sampler, IntPtr pTexture)
+        public int SetTextureHook(IntPtr devicePtr, uint Sampler, IntPtr pTexture)
         {
             var device = new Device(devicePtr);
 
@@ -117,7 +118,7 @@ namespace RoeHack.Library.DirectXHooker
             return hookSetTexture.Target(devicePtr, Sampler, pTexture);
         }
 
-        private int SetStreamSourceHook(IntPtr devicePtr, uint StreamNumber, IntPtr pStreamData, uint OffsetInBytes, uint sStride)
+        public int SetStreamSourceHook(IntPtr devicePtr, uint StreamNumber, IntPtr pStreamData, uint OffsetInBytes, uint sStride)
         {
             if (StreamNumber == 0)
             {
@@ -126,7 +127,17 @@ namespace RoeHack.Library.DirectXHooker
             return hookSetStreamSource.Target(devicePtr, StreamNumber, pStreamData, OffsetInBytes, sStride);
         }
 
-        void SetFont(IntPtr devicePtr)
+        private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
+        {
+            if (stride == 72 && vSize > 1000 && vSize < 3025)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SetFont(IntPtr devicePtr)
         {
             this.font = new SharpDX.Direct3D9.Font((Device)devicePtr, new FontDescription()
             {
@@ -143,41 +154,32 @@ namespace RoeHack.Library.DirectXHooker
             });
         }
 
-        void SetColor(IntPtr devicePtr)
+        private void SetColor(IntPtr devicePtr)
         {
             int _texWidth = 1, _texHeight = 1;
             Bitmap bmFront = new Bitmap(_texWidth, _texHeight);
             Graphics gFront = Graphics.FromImage(bmFront); //创建b1的Graphics
-            gFront.FillRectangle(Brushes.Gold, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            gFront.FillRectangle(Brushes.Gold, new Rectangle(0, 0, _texWidth, _texHeight));
             string fileNameFront = "..//Front.jpg";
             bmFront.Save(fileNameFront);
 
             Bitmap bmBack = new Bitmap(_texWidth, _texHeight);
             Graphics gBack = Graphics.FromImage(bmBack); //创建b1的Graphics
-            gBack.FillRectangle(Brushes.Red, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            gBack.FillRectangle(Brushes.Red, new Rectangle(0, 0, _texWidth, _texHeight));
             string fileNameBack = "..//back.jpg";
             bmBack.Save(fileNameBack);
 
-            textureBack = Texture.FromFile((Device)devicePtr, fileNameBack);
-            textureFront = Texture.FromFile((Device)devicePtr, fileNameFront);
+            textureBack = Texture.FromFile((Device)devicePtr, fileNameFront);
+            textureFront = Texture.FromFile((Device)devicePtr, fileNameBack);
 
-        }
-
-        private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
-        {
-            if (stride == 72 && vSize > 1000&& vSize < 3025)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         public void Dispose()
         {
             hookDrawIndexedPrimitive.Dispose();
-            hookPresent.Dispose();
+            hookSetStreamSource.Dispose();
             hookSetTexture.Dispose();
+            hookPresent.Dispose();
         }
 
         #region Moved

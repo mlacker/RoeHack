@@ -11,7 +11,8 @@ namespace RoeHack.Library.Core
     {
         private readonly ServerInterface server;
         private readonly IpcConnectLogger logger;
-        IDirectXHooker hooker;
+        private IDirectXHooker hooker;
+
         public InjectEntryPoint(RemoteHooking.IContext context, Parameter parameter)
         {
             server = RemoteHooking.IpcConnectClient<ServerInterface>(parameter.ChannelName);
@@ -24,7 +25,7 @@ namespace RoeHack.Library.Core
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
-            logger.Debug($"Injector has injected payload into process {RemoteHooking.GetCurrentProcessId()}.");
+            logger.Info($"已成功注入进程 {RemoteHooking.GetCurrentProcessId()}.");
 
             hooker?.Hooking();
 
@@ -78,17 +79,17 @@ namespace RoeHack.Library.Core
                 { "11_1", "d3d11_1.dll" },
                 { "12", "d3d12.dll" }
             };
-            var currentVersion = versions
-                .Where(it => GetModuleHandle(it.Value) != null)
-                .Select(it => it.Key)
-                .FirstOrDefault(); ;
+            var checkedVersions = versions
+                .Where(it => GetModuleHandle(it.Value) != IntPtr.Zero)
+                .Select(it => it.Key);
+
+            logger.Debug($"已检测到进程使用的驱动版本：{string.Join(", ", checkedVersions)}.");
+
+            var currentVersion = checkedVersions
+                .FirstOrDefault();
 
             IDirectXHooker hooker = null;
-            if (currentVersion == null)
-            {
-                logger.Error($"未检测到目标进程对应的 directx 版本.");
-            }
-            else
+            if (currentVersion != null)
             {
                 logger.Debug($"当前驱动版本为 {currentVersion}.");
 
@@ -102,9 +103,13 @@ namespace RoeHack.Library.Core
                         hooker = new DirectXHooker.DriectX11Hooker(parameter);
                         break;
                     default:
-                        logger.Error($"DirectX{currentVersion} 版本尚未实现，请联系作者韦大神！");
+                        logger.Error($"尚未实现 DirectX{currentVersion} 版本，请联系韦大神！");
                         break;
                 }
+            }
+            else
+            {
+                logger.Error($"未检测到目标进程对应的 directx 版本.");
             }
 
             return hooker;
