@@ -25,6 +25,11 @@ namespace RoeHack.Forms
             var process = Process.GetProcessesByName(processName)
                 .SingleOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
 
+            if (!RemoteHooking.IsAdministrator)
+            {
+                throw new AppException("请以管理员身份运行程序.");
+            }
+
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
 
             string channelName = null;
