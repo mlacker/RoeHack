@@ -10,7 +10,7 @@ namespace FileMonitor
         {
             Injector injector = new Injector();
 
-            var processName = "Europa_Client";
+            var processName = "notepad";
 
             try
             {
@@ -27,6 +27,10 @@ namespace FileMonitor
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("<Press any key to exit>");
             Console.ResetColor();
+            Console.ReadKey(true);
+
+            injector.Close();
+
             Console.ReadKey(true);
         }
     }

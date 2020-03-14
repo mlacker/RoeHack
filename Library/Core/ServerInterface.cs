@@ -8,20 +8,14 @@ namespace RoeHack.Library.Core
     /// </summary>
     public class ServerInterface : MarshalByRefObject, IIpcLoggerInterface
     {
-        public static ServerInterface Instance { get; private set; }
-
-        private ILog logger;
+        private readonly ILog logger;
 
         public ServerInterface()
         {
-            Instance = this;
-            logger = new ConsoleLogger ("ServerInterface", LogLevel.Debug);
+            logger = new ConsoleLogger("ServerInterface", LogLevel.Debug);
         }
 
-        public ILog Logger
-        {
-            set { logger = value; }
-        }
+        public event OnClosedHandle OnClosed;
 
         /// <summary>
         /// Called to confirm that the IPC channel is still open / host application has not closed
@@ -33,6 +27,31 @@ namespace RoeHack.Library.Core
         public void WriteInternal(LogLevel level, string message, Exception exception)
         {
             logger.LogLevel(level, message, exception);
+        }
+
+        public void Close()
+        {
+            if (OnClosed != null)
+                OnClosed();
+        }
+    }
+
+
+    public delegate void OnClosedHandle();
+
+    public class ServerInterfaceEventProxy : MarshalByRefObject
+    {
+        public event OnClosedHandle OnClosed;
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
+
+        public void Close()
+        {
+            if (OnClosed != null)
+                OnClosed();
         }
     }
 }

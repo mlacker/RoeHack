@@ -3,6 +3,8 @@ using RoeHack.Library.Core.Logging;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Ipc;
 using System.Threading;
 
 namespace RoeHack.Library.Core
@@ -10,12 +12,25 @@ namespace RoeHack.Library.Core
     public class InjectEntryPoint : IEntryPoint, IDisposable
     {
         private readonly ServerInterface server;
+        private readonly ServerInterfaceEventProxy proxy;
         private readonly IpcConnectLogger logger;
         private readonly IDirectXHooker hooker;
+        private bool isClosed = false;
 
         public InjectEntryPoint(RemoteHooking.IContext context, Parameter parameter)
         {
             server = RemoteHooking.IpcConnectClient<ServerInterface>(parameter.ChannelName);
+            var channel = new IpcServerChannel(
+                parameter.ChannelName,
+                parameter.ChannelName + Guid.NewGuid().ToString("N"),
+                new BinaryServerFormatterSinkProvider()
+                {
+                    TypeFilterLevel = System.Runtime.Serialization.Formatters.TypeFilterLevel.Full
+                });
+            ChannelServices.RegisterChannel(channel, false);
+
+            proxy = new ServerInterfaceEventProxy();
+
             logger = new IpcConnectLogger(server);
 
             server.Ping();
@@ -29,11 +44,16 @@ namespace RoeHack.Library.Core
 
             hooker?.Hooking();
 
+            server.OnClosed += proxy.Close;
+            proxy.OnClosed += OnClosed;
+
             logger.Debug("All hooks installed");
 
             BlockedCheckStatus();
 
             Dispose();
+
+            logger.Info("注入已分离.");
         }
 
         public void Dispose()
@@ -43,6 +63,10 @@ namespace RoeHack.Library.Core
 
             // Finalise cleanup of hooks
             LocalHook.Release();
+
+            server.OnClosed -= proxy.Close;
+
+            logger.Debug("资源已成功释放.");
         }
 
         /// <summary>
@@ -52,7 +76,7 @@ namespace RoeHack.Library.Core
         {
             try
             {
-                while (true)
+                while (!isClosed)
                 {
                     Thread.Sleep(1000);
 
@@ -63,6 +87,11 @@ namespace RoeHack.Library.Core
             {
                 // Ping() or ReportMessages() will raise an exception if host is unreachable
             }
+        }
+
+        private void OnClosed()
+        {
+            isClosed = true;
         }
 
         [DllImport("kernel32.dll")]
@@ -83,7 +112,8 @@ namespace RoeHack.Library.Core
                 .Where(it => GetModuleHandle(it.Value) != IntPtr.Zero)
                 .Select(it => it.Key);
 
-            logger.Debug($"已检测到进程使用的驱动版本：{string.Join(", ", checkedVersions)}.");
+            if (checkedVersions.Count() > 0)
+                logger.Debug($"已检测到进程可用的驱动版本：{string.Join(", ", checkedVersions)}.");
 
             var currentVersion = checkedVersions
                 .FirstOrDefault();
@@ -109,7 +139,7 @@ namespace RoeHack.Library.Core
             }
             else
             {
-                logger.Error($"未检测到目标进程对应的 directx 版本.");
+                logger.Error($"未检测到目标进程对应的 DirectX 版本.");
             }
 
             return hooker;
