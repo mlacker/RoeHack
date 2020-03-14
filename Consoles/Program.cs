@@ -28,6 +28,10 @@ namespace FileMonitor
             Console.WriteLine("<Press any key to exit>");
             Console.ResetColor();
             Console.ReadKey(true);
+
+            injector.Close();
+
+            Console.ReadKey(true);
         }
     }
 }

@@ -15,15 +15,10 @@ namespace RoeHack.Library.DirectXHooker
         private readonly Parameter parameter;
         private readonly ILog logger;
 
-        private HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
+        private HookWrapper<DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
-        private HookWrapper<Direct3D9Device_SetTextureDelegate> hookSetTexture;
-        private HookWrapper<Direct3D9Device_SetStreamSourceDelegate> hookSetStreamSource;
 
         private bool firsted = true;
-        private SharpDX.Direct3D9.Font font;
-        private int vSize;
-        private uint stride;
 
         private Texture textureBack;
         private Texture textureFront;
@@ -35,41 +30,49 @@ namespace RoeHack.Library.DirectXHooker
         }
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        public delegate int Direct3D9Device_DrawIndexedPrimitiveDelegate(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount);
+        public delegate int DrawIndexedPrimitiveDelegate(IntPtr devicePtr, PrimitiveType primitiveType, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        delegate int Direct3D9Device_SetStreamSourceDelegate(IntPtr devicePtr, uint StreamNumber, IntPtr pStreamData, uint OffsetInBytes, uint sStride);
+        delegate int SetStreamSourceDelegate(IntPtr devicePtr, uint streamNumber, IntPtr streamDataPtr, uint offsetInBytes, uint stride);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        delegate int Direct3D9Device_SetTextureDelegate(IntPtr devicePtr, uint Sampler, IntPtr pTexture);
+        delegate int SetTextureDelegate(IntPtr devicePtr, uint sampler, IntPtr texturePtr);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        delegate int PresentDelegate(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion);
+        delegate int PresentDelegate(IntPtr devicePtr, SharpDX.Rectangle[] sourceRect, SharpDX.Rectangle[] destRect, IntPtr destWindowOverridePtr, IntPtr dirtyRegionPtr);
 
 
         public void Hooking()
         {
             var address = GetAddress();
 
-            hookDrawIndexedPrimitive = new HookWrapper<Direct3D9Device_DrawIndexedPrimitiveDelegate>(
-                address[82], new Direct3D9Device_DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
+            hookDrawIndexedPrimitive = new HookWrapper<DrawIndexedPrimitiveDelegate>(
+                address[82], new DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
 
             hookPresent = new HookWrapper<PresentDelegate>(
                 address[17], new PresentDelegate(PresentHook), this);
-
-            hookSetTexture = new HookWrapper<Direct3D9Device_SetTextureDelegate>(
-                address[65], new Direct3D9Device_SetTextureDelegate(SetTextureHook),
-                this);
-
-            hookSetStreamSource = new HookWrapper<Direct3D9Device_SetStreamSourceDelegate>(
-                address[100], new Direct3D9Device_SetStreamSourceDelegate(SetStreamSourceHook),
-                this);
         }
 
         public int DrawIndexedPrimitiveHook(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount)
         {
-            var device = new Device(devicePtr);
-            if (IsPlayers((int)stride, vSize, numVertices, primCount))
+            var device = (Device)devicePtr;
+
+            device.GetStreamSource(0, out var streamData, out var offsetInBytes, out var stride);
+            streamData?.Dispose();
+
+            var vSize = 0;
+            var vShader = device.VertexShader;
+            if (vShader != null)
+            {
+                if (vShader.Function.BufferSize != null)
+                {
+                    vSize = vShader.Function.BufferSize;
+                    vShader.Function.Dispose();
+                }
+                vShader.Dispose();
+            }
+
+            if (IsPlayers(stride, vSize, numVertices, primCount))
             {
                 //设置墙后颜色
                 device.SetRenderState(RenderState.Lighting, false);
@@ -80,7 +83,8 @@ namespace RoeHack.Library.DirectXHooker
 
                 device.SetRenderState(RenderState.ZEnable, true);
                 device.SetRenderState(RenderState.FillMode, FillMode.Solid);
-                device.SetTexture(0, textureFront); hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
+                device.SetTexture(0, textureFront);
+                hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
             }
 
             return hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
@@ -91,40 +95,10 @@ namespace RoeHack.Library.DirectXHooker
             if (firsted)
             {
                 firsted = false;
-                SetFont(devicePtr);
                 SetColor(devicePtr);
             }
 
-            //this.font.DrawText(null, "挂载成功", 50, 50, SharpDX.Color.Red);
-
             return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
-        }
-
-        public int SetTextureHook(IntPtr devicePtr, uint Sampler, IntPtr pTexture)
-        {
-            var device = new Device(devicePtr);
-
-            var vShader = device.VertexShader;
-            if (vShader != null)
-            {
-                if (vShader.Function.BufferSize != null)
-                {
-                    this.vSize = vShader.Function.BufferSize;
-                    vShader.Function.Dispose();
-                }
-                vShader.Dispose();
-            }
-
-            return hookSetTexture.Target(devicePtr, Sampler, pTexture);
-        }
-
-        public int SetStreamSourceHook(IntPtr devicePtr, uint StreamNumber, IntPtr pStreamData, uint OffsetInBytes, uint sStride)
-        {
-            if (StreamNumber == 0)
-            {
-                this.stride = sStride;
-            }
-            return hookSetStreamSource.Target(devicePtr, StreamNumber, pStreamData, OffsetInBytes, sStride);
         }
 
         private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
@@ -135,23 +109,6 @@ namespace RoeHack.Library.DirectXHooker
             }
 
             return false;
-        }
-
-        private void SetFont(IntPtr devicePtr)
-        {
-            this.font = new SharpDX.Direct3D9.Font((Device)devicePtr, new FontDescription()
-            {
-                Height = 40,
-                FaceName = "Arial",
-                Italic = false,
-                Width = 0,
-                MipLevels = 1,
-                CharacterSet = FontCharacterSet.Default,
-                OutputPrecision = FontPrecision.Default,
-                Quality = FontQuality.Antialiased,
-                PitchAndFamily = FontPitchAndFamily.Default | FontPitchAndFamily.DontCare,
-                Weight = FontWeight.Bold
-            });
         }
 
         private void SetColor(IntPtr devicePtr)
@@ -177,8 +134,6 @@ namespace RoeHack.Library.DirectXHooker
         public void Dispose()
         {
             hookDrawIndexedPrimitive.Dispose();
-            hookSetStreamSource.Dispose();
-            hookSetTexture.Dispose();
             hookPresent.Dispose();
         }
 

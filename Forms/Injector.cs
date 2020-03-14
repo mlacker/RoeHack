@@ -9,25 +9,32 @@ namespace RoeHack.Forms
 {
     public class Injector
     {
-        private readonly ILog logger = new ConsoleLogger("Injector", LogLevel.Debug);
+        private readonly ServerInterface server;
+        private readonly ILog logger;
+
+        public Injector()
+        {
+            server = new ServerInterface();
+            logger = new ConsoleLogger("Injector", LogLevel.Debug);
+        }
 
         public Parameter Parameter { get; private set; } = new Parameter();
 
         public void Inject(string processName)
         {
+            var process = Process.GetProcessesByName(processName)
+                .SingleOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
+
             if (!RemoteHooking.IsAdministrator)
             {
                 throw new AppException("请以管理员身份运行程序.");
             }
 
-            var process = Process.GetProcessesByName(processName)
-                .SingleOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
-
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
 
             string channelName = null;
             RemoteHooking.IpcCreateServer<ServerInterface>(
-                ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
+                ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, server);
             Parameter.ChannelName = channelName;
 
             try
@@ -45,6 +52,11 @@ namespace RoeHack.Forms
             {
                 throw new ApplicationException("向目标注入时有一个错误：", ex);
             }
+        }
+
+        public void Close()
+        {
+            server.Close();
         }
     }
 }

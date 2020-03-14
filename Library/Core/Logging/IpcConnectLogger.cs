@@ -13,7 +13,13 @@ namespace RoeHack.Library.Core.Logging
 
         public override void LogLevel(LogLevel level, string message, Exception exception = null)
         {
-            server.WriteInternal(level, message, exception);
+            try
+            {
+                server.WriteInternal(level, message, exception);
+            }
+            catch
+            {
+            }
         }
     }
 }
