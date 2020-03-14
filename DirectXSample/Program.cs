@@ -10,6 +10,10 @@ namespace DirectXSample
     {
         static void Main(string[] args)
         {
+            using (var temp = new KikuSimairme())
+            {
+                temp.Run();
+            }
         }
     }
 }
