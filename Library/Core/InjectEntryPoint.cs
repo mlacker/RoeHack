@@ -105,7 +105,6 @@ namespace RoeHack.Library.Core
                 { "10", "d3d10.dll" },
                 { "10_1", "d3d10_1.dll" },
                 { "11", "d3d11.dll" },
-                { "11_1", "d3d11_1.dll" },
                 { "12", "d3d12.dll" }
             };
             var checkedVersions = versions
@@ -129,7 +128,6 @@ namespace RoeHack.Library.Core
                         hooker = new DirectXHooker.DriectX9Hooker(parameter, logger);
                         break;
                     case "11":
-                    case "11_1":
                         hooker = new DirectXHooker.DriectX11Hooker(parameter);
                         break;
                     default:
