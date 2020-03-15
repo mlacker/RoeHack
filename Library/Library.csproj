@@ -81,6 +81,7 @@
     <Compile Include="Core\ServerInterface.cs" />
     <Compile Include="Core\InjectEntryPoint.cs" />
     <Compile Include="DirectXHooker\DriectX11Hooker.cs" />
+    <Compile Include="DirectXHooker\DriectX12Hooker.cs" />
     <Compile Include="DirectXHooker\DriectX9Hooker.cs" />
     <Compile Include="Core\HookWrapper.cs" />
     <Compile Include="DirectXHooker\Dx11\DXFont.cs" />
