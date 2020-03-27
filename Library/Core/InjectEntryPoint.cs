@@ -115,7 +115,7 @@ namespace RoeHack.Library.Core
                 logger.Debug($"已检测到进程可用的驱动版本：{string.Join(", ", checkedVersions)}.");
 
             var currentVersion = checkedVersions
-                .FirstOrDefault();
+                .LastOrDefault();
 
             IDirectXHooker hooker = null;
             if (currentVersion != null)
