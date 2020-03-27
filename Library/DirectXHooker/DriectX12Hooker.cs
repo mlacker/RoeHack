@@ -106,6 +106,12 @@ namespace RoeHack.Library.DirectXHooker
 
         public void Dispose()
         {
+            hookPresent.Dispose();
+            hookDrawInstanced.Dispose();
+            hookDrawIndexedInstanced.Dispose();
+            hookExecuteCommandLists.Dispose();
+            hookSignalDelegate.Dispose();
+
             SharpDX.Utilities.Dispose(ref device);
         }
 
