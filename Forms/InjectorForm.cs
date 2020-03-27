@@ -22,7 +22,8 @@ namespace RoeHack.Forms
 
         private void btnEnable_Click(object sender, EventArgs e)
         {
-            injector.Inject("hl");
+            injector.Inject("HelloTexture");
+            //injector.Inject("hl");
             //injector.Inject("Europa_Client");
         }
     }

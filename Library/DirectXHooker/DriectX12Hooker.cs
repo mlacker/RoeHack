@@ -43,6 +43,7 @@ namespace RoeHack.Library.DirectXHooker
         private HookWrapper<SignalDelegate> hookSignalDelegate;
 
         private bool init = false;
+        private SwapChain3 swapChain;
         private D3D12.Device device;
 
         public void Hooking()
@@ -69,13 +70,13 @@ namespace RoeHack.Library.DirectXHooker
         {
             if (!init)
             {
-                var swapChain = (SwapChain)swapChainPtr;
+                swapChain = SwapChain3.FromPointer<SwapChain3>(swapChainPtr);
                 this.device = swapChain.GetDevice<D3D12.Device>();
 
                 init = true;
             }
 
-            return hookPresent.Target(swapChainPtr, syncInterval, flags);
+            return swapChain.Present(syncInterval, flags);
         }
 
         public void DrawInstancedHook(IntPtr commandListPtr, int vertexCountPerInstance, int instanceCount, int startVertexLocation, int startInstanceLocation)
@@ -173,8 +174,6 @@ namespace RoeHack.Library.DirectXHooker
 
                     _swapChain.Dispose();
                     _swapChain = null;
-
-                    renderForm.Close();
                 }
             }
 
