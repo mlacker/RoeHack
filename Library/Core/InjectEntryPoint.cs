@@ -54,6 +54,9 @@ namespace RoeHack.Library.Core
             Dispose();
 
             logger.Info("注入已分离.");
+
+            // Waiting the message send to client
+            Thread.Sleep(300);
         }
 
         public void Dispose()
@@ -63,8 +66,6 @@ namespace RoeHack.Library.Core
 
             // Finalise cleanup of hooks
             LocalHook.Release();
-
-            server.OnClosed -= proxy.Close;
 
             logger.Debug("资源已成功释放.");
         }
@@ -82,10 +83,12 @@ namespace RoeHack.Library.Core
 
                     server.Ping();
                 }
+
+                server.OnClosed -= proxy.Close;
             }
             catch
             {
-                // Ping() or ReportMessages() will raise an exception if host is unreachable
+                // Ping() will raise an exception if host is unreachable
             }
         }
 

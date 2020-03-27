@@ -42,10 +42,8 @@ namespace RoeHack.Library.Core.Logging
                     await Task.Delay(100);
                 }
             }
-            catch (Exception)
+            catch (System.Runtime.Remoting.RemotingException)
             {
-                // TODO fetch exception type
-                throw;
             }
         }
     }
