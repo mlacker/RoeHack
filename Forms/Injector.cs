@@ -11,6 +11,7 @@ namespace RoeHack.Forms
     {
         private readonly ServerInterface server;
         private readonly ILog logger;
+        private bool injected = false;
 
         public Injector()
         {
@@ -19,6 +20,8 @@ namespace RoeHack.Forms
         }
 
         public Parameter Parameter { get; private set; } = new Parameter();
+
+        public bool Injected { get => injected; }
 
         public void Inject(string processName)
         {
@@ -47,6 +50,8 @@ namespace RoeHack.Forms
                     injectionLibrary,
                     Parameter
                     );
+
+                injected = true;
             }
             catch (Exception ex)
             {
@@ -57,6 +62,8 @@ namespace RoeHack.Forms
         public void Close()
         {
             server.Close();
+
+            injected = false;
         }
     }
 }
