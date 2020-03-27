@@ -54,7 +54,7 @@ namespace RoeHack.Forms
             }
             catch (Exception ex)
             {
-                throw new ApplicationException("向目标注入时有一个错误：", ex);
+                logger.Error("向目标注入时有一个错误：", ex);
             }
         }
 

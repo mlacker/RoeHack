@@ -1,6 +1,6 @@
 ﻿namespace RoeHack.Forms
 {
-    partial class DebugForm
+    partial class InjectorDebugForm
     {
         /// <summary>
         /// Required designer variable.
@@ -40,10 +40,12 @@
             // cbxProcess
             // 
             this.cbxProcess.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbxProcess.DisplayMember = "MainWindowTitle";
             this.cbxProcess.Location = new System.Drawing.Point(500, 12);
             this.cbxProcess.Name = "cbxProcess";
             this.cbxProcess.Size = new System.Drawing.Size(200, 20);
             this.cbxProcess.TabIndex = 1;
+            this.cbxProcess.ValueMember = "processName";
             // 
             // cbxVersion
             // 
@@ -80,12 +82,15 @@
             this.txtOutput.Multiline = true;
             this.txtOutput.Name = "txtOutput";
             this.txtOutput.ReadOnly = true;
+            this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtOutput.Size = new System.Drawing.Size(480, 428);
             this.txtOutput.TabIndex = 0;
+            this.txtOutput.TabStop = false;
             // 
             // btnDetach
             // 
             this.btnDetach.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnDetach.Enabled = false;
             this.btnDetach.Location = new System.Drawing.Point(610, 64);
             this.btnDetach.Name = "btnDetach";
             this.btnDetach.Size = new System.Drawing.Size(80, 23);
@@ -113,7 +118,7 @@
             this.btnClear.Text = "清空";
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
-            // DebugForm
+            // InjectorDebugForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -125,16 +130,17 @@
             this.Controls.Add(this.btnInject);
             this.Controls.Add(this.cbxVersion);
             this.Controls.Add(this.cbxProcess);
+            this.KeyPreview = true;
             this.MaximizeBox = false;
             this.MaximumSize = new System.Drawing.Size(1280, 768);
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(720, 480);
-            this.Name = "DebugForm";
+            this.Name = "InjectorDebugForm";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "DebugForm";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DebugForm_FormClosing);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.DebugForm_KeyUp);
+            this.Text = "RoeHack";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InjectorDebugForm_FormClosing);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.InjectorDebugForm_KeyUp);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -143,10 +149,10 @@
         #endregion
         private System.Windows.Forms.ComboBox cbxProcess;
         private System.Windows.Forms.ComboBox cbxVersion;
-        private System.Windows.Forms.TextBox txtOutput;
         private System.Windows.Forms.Button btnInject;
         private System.Windows.Forms.Button btnDetach;
         private System.Windows.Forms.Button btnRefresh;
         private System.Windows.Forms.Button btnClear;
+        private System.Windows.Forms.TextBox txtOutput;
     }
 }

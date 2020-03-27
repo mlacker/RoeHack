@@ -55,6 +55,7 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "RoeHack";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InjectorForm_FormClosing);
+            this.Shown += new System.EventHandler(this.InjectorForm_Shown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.InjectorForm_KeyUp);
             this.ResumeLayout(false);
 

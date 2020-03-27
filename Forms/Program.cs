@@ -13,7 +13,7 @@ namespace RoeHack.Forms
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new InjectorForm());
+            Application.Run(new InjectorDebugForm());
         }
     }
 }
