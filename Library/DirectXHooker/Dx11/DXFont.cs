@@ -17,7 +17,6 @@ namespace RoeHack.Library.DirectXHooker.Dx11
         {
             _device = device;
             _deviceContext = deviceContext;
-            _initialized = false;
             _fontSheetTex = null;
             _fontSheetSRV = null;
             _texWidth = 1024;
@@ -49,7 +48,6 @@ namespace RoeHack.Library.DirectXHooker.Dx11
             STYLE_STRIKEOUT = 8
         };
 
-        bool _initialized;
         const char StartChar = (char)33;
         const char EndChar = (char)127;
         const uint NumChars = EndChar - StartChar;
@@ -94,8 +92,6 @@ namespace RoeHack.Library.DirectXHooker.Dx11
                     }
                 }
             }
-
-            _initialized = true;
 
             return true;
         }

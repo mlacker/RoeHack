@@ -51,7 +51,6 @@ namespace RoeHack.Library.DirectXHooker.Dx11
             public Color4 Color;
         }
 
-        bool _initialized;
         BlendState _transparentBS;
         EffectTechnique _spriteTech;
         EffectShaderResourceVariable _spriteMap;
@@ -212,8 +211,6 @@ technique11 SpriteTech {
                     _transparentBS = new BlendState(_device, transparentDesc);
                 }
             }
-
-            _initialized = true;
 
             return true;
         }
