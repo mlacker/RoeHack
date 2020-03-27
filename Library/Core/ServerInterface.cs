@@ -6,7 +6,7 @@ namespace RoeHack.Library.Core
     /// <summary>
     /// Provides an interface for communicating from the client (target) to the server (injector)
     /// </summary>
-    public class ServerInterface : MarshalByRefObject, IIpcLoggerInterface
+    public class ServerInterface : MarshalByRefObject, ClientInterface, IIpcLoggerInterface
     {
         private readonly ILog logger;
 
@@ -14,8 +14,6 @@ namespace RoeHack.Library.Core
         {
             this.logger = logger;
         }
-
-        public event OnClosedHandle OnClosed;
 
         /// <summary>
         /// Called to confirm that the IPC channel is still open / host application has not closed
@@ -32,29 +30,8 @@ namespace RoeHack.Library.Core
             }
         }
 
-        public void Close()
-        {
-            if (OnClosed != null)
-                OnClosed();
-        }
-    }
-
-
-    public delegate void OnClosedHandle();
-
-    public class ServerInterfaceEventProxy : MarshalByRefObject
-    {
         public event OnClosedHandle OnClosed;
 
-        public override object InitializeLifetimeService()
-        {
-            return null;
-        }
-
-        public void Close()
-        {
-            if (OnClosed != null)
-                OnClosed();
-        }
+        public void Close() => OnClosed?.Invoke();
     }
 }

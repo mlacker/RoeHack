@@ -99,6 +99,7 @@
     <Compile Include="Core\Logging\ILog.cs" />
     <Compile Include="Core\Logging\IpcConnectLogger.cs" />
     <Compile Include="Core\Logging\LogEntry.cs" />
+    <Compile Include="Core\ClientInterface.cs" />
     <Compile Include="Core\ServerInterface.cs" />
     <Compile Include="Core\InjectEntryPoint.cs" />
     <Compile Include="DirectXHooker\DriectX11Hooker.cs" />

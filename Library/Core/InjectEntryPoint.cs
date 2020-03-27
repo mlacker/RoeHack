@@ -12,7 +12,7 @@ namespace RoeHack.Library.Core
     public class InjectEntryPoint : IEntryPoint, IDisposable
     {
         private readonly ServerInterface server;
-        private readonly ServerInterfaceEventProxy proxy;
+        private readonly ClientInterfaceEventProxy proxy;
         private readonly IpcConnectLogger logger;
         private readonly IDirectXHooker hooker;
         private bool isClosed = false;
@@ -29,7 +29,7 @@ namespace RoeHack.Library.Core
                 });
             ChannelServices.RegisterChannel(channel, false);
 
-            proxy = new ServerInterfaceEventProxy();
+            proxy = new ClientInterfaceEventProxy();
 
             logger = new IpcConnectLogger(server);
 
