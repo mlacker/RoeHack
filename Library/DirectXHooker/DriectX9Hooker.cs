@@ -62,12 +62,12 @@ namespace RoeHack.Library.DirectXHooker
 
             if (IsPlayers(stride, numVertices, primCount))
             {
-                device.SetTexture(0, textureFront);
+                device.SetTexture(0, textureBack);
                 device.SetRenderState(RenderState.ZEnable, false);
 
                 hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
 
-                device.SetTexture(0, textureBack);
+                device.SetTexture(0, textureFront);
                 device.SetRenderState(RenderState.ZEnable, true);
             }
 
@@ -113,20 +113,22 @@ namespace RoeHack.Library.DirectXHooker
             // 抓钩背包, 登山背包
             new Element(4313, 6517),
         };
-        private Element currentElement;
 
         private bool IsPlayers(int stride, int numVertices, int primCount)
         {
             var element = new Element(numVertices, primCount);
-            if (stride == 72 && !elements.Contains(element))
-            {
-                //elements.Add(element);
-                //logger.Debug(element.ToString());
-            }
 
             if (stride == 72)
-            //if (stride == 72 && elements.Contains(element))
             {
+                if (elements.Contains(element))
+                {
+                }
+                else
+                {
+                    //elements.Add(element);
+                    //logger.Debug(element.ToString());
+                }
+
                 return true;
             }
 
