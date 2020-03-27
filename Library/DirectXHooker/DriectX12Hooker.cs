@@ -1,9 +1,11 @@
 ﻿using RoeHack.Library.Core;
 using RoeHack.Library.Core.Logging;
+using SharpDX.Direct3D12;
 using SharpDX.DXGI;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using D3D12 = SharpDX.Direct3D12;
 
 namespace RoeHack.Library.DirectXHooker
@@ -108,13 +110,88 @@ namespace RoeHack.Library.DirectXHooker
 
         #region Moved
 
+        private SwapChain3 _swapChain;
+        private SharpDX.Direct3D12.Device _device12;
+        private CommandQueue _commandQueue;
+        private CommandAllocator _commandAllocator;
+        private GraphicsCommandList _commandList;
+
         private List<IntPtr> GetProcAddress()
         {
             var address = new List<IntPtr>();
 
-            // TODO
+            using (var renderForm = new Form())
+            {
+                using (var factory = new SharpDX.DXGI.Factory4())
+                {
+                    _commandQueue
+                        = _device12.CreateCommandQueue(new SharpDX.Direct3D12.CommandQueueDescription(SharpDX.Direct3D12.CommandListType.Direct));
+
+                    _commandAllocator
+                        = _device12.CreateCommandAllocator(CommandListType.Direct);
+
+                    _commandList
+                        = _device12.CreateCommandList(CommandListType.Direct, _commandAllocator, null);
+
+                    var swapChainDesc = new SharpDX.DXGI.SwapChainDescription()
+                    {
+                        BufferCount = 2,
+                        ModeDescription = new SharpDX.DXGI.ModeDescription(100, 100, new SharpDX.DXGI.Rational(60, 1), SharpDX.DXGI.Format.R8G8B8A8_UNorm),
+                        Usage = SharpDX.DXGI.Usage.RenderTargetOutput,
+                        SwapEffect = SharpDX.DXGI.SwapEffect.FlipDiscard,
+                        OutputHandle = renderForm.Handle,
+                        Flags = SwapChainFlags.AllowModeSwitch,
+                        SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                        IsWindowed = true
+                    };
+
+                    var tempSwapChain = new SharpDX.DXGI.SwapChain(factory, _commandQueue, swapChainDesc);
+                    _swapChain = tempSwapChain.QueryInterface<SharpDX.DXGI.SwapChain3>();
+                    tempSwapChain.Dispose();
+                }
+
+                if (_device12 != null && _swapChain != null)
+                {
+                    address.AddRange(GetVTblAddresses(_device12.NativePointer, 44));
+                    address.AddRange(GetVTblAddresses(_commandQueue.NativePointer, 19));
+                    address.AddRange(GetVTblAddresses(_commandAllocator.NativePointer, 9));
+                    address.AddRange(GetVTblAddresses(_commandList.NativePointer, 60));
+                    address.AddRange(GetVTblAddresses(_swapChain.NativePointer, 18));
+
+                    _device12.Dispose();
+                    _device12 = null;
+
+                    _commandQueue.Dispose();
+                    _commandQueue = null;
+
+                    _commandAllocator.Dispose();
+                    _commandAllocator = null;
+
+                    _commandList.Dispose();
+                    _commandList = null;
+
+                    _swapChain.Dispose();
+                    _swapChain = null;
+
+                    renderForm.Close();
+                }
+            }
 
             return address;
+        }
+
+        protected List<IntPtr> GetVTblAddresses(IntPtr pointer, int numberOfMethods)
+        {
+            List<IntPtr> vtblAddresses = new List<IntPtr>();
+
+            IntPtr vTable = Marshal.ReadIntPtr(pointer);
+            for (int i = 0; i < numberOfMethods; i++)
+            {
+                var ptr = Marshal.ReadIntPtr(vTable, i * IntPtr.Size);
+                vtblAddresses.Add(ptr); // using IntPtr.Size allows us to support both 32 and 64-bit processes
+            }
+
+            return vtblAddresses;
         }
 
         #endregion
