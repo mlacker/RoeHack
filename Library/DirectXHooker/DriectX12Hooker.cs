@@ -120,6 +120,7 @@ namespace RoeHack.Library.DirectXHooker
         {
             var address = new List<IntPtr>();
 
+            _device12 = new SharpDX.Direct3D12.Device(null, SharpDX.Direct3D.FeatureLevel.Level_11_0);
             using (var renderForm = new Form())
             {
                 using (var factory = new SharpDX.DXGI.Factory4())
