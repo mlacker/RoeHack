@@ -34,7 +34,7 @@ namespace RoeHack.Library.DirectXHooker
         public delegate void ExecuteCommandListsDelegate(IntPtr commandQueuePtr, int numCommandLists, D3D12.CommandList[] commandListsOut);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        public delegate void SignalDelegate(IntPtr commandQueuePtr, D3D12.Fence fenceRef, long value);
+        public delegate void SignalDelegate(IntPtr commandQueuePtr, IntPtr fenceRef, long value);
 
         private HookWrapper<PresentDelegate> hookPresent;
         private HookWrapper<DrawInstancedDelegate> hookDrawInstanced;
@@ -52,7 +52,7 @@ namespace RoeHack.Library.DirectXHooker
 
             hookPresent = new HookWrapper<PresentDelegate>(
                 address[140], new PresentDelegate(PresentHook), this);
-
+            /*
             hookDrawInstanced = new HookWrapper<DrawInstancedDelegate>(
                 address[84], new DrawInstancedDelegate(DrawInstancedHook), this);
 
@@ -61,7 +61,7 @@ namespace RoeHack.Library.DirectXHooker
 
             hookExecuteCommandLists = new HookWrapper<ExecuteCommandListsDelegate>(
                 address[54], new ExecuteCommandListsDelegate(ExecuteCommandListsHook), this);
-
+            */
             hookSignalDelegate = new HookWrapper<SignalDelegate>(
                 address[58], new SignalDelegate(SignalHook), this);
         }
@@ -71,7 +71,7 @@ namespace RoeHack.Library.DirectXHooker
             if (!init)
             {
                 swapChain = SwapChain3.FromPointer<SwapChain3>(swapChainPtr);
-                this.device = swapChain.GetDevice<D3D12.Device>();
+                device = swapChain.GetDevice<D3D12.Device>();
 
                 init = true;
             }
@@ -94,9 +94,9 @@ namespace RoeHack.Library.DirectXHooker
             hookExecuteCommandLists.Target(commandQueuePtr, numCommandLists, commandListsOut);
         }
 
-        public void SignalHook(IntPtr commandQueuePtr, D3D12.Fence fenceRef, long value)
+        public void SignalHook(IntPtr commandQueuePtr, IntPtr fenceRef, long value)
         {
-            hookSignalDelegate.Target(commandQueuePtr, fenceRef, value);
+           hookSignalDelegate.Target(commandQueuePtr, fenceRef, value);
         }
 
         private bool IsPlayers()
