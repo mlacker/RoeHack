@@ -1,4 +1,5 @@
-﻿using RoeHack.Forms;
+﻿using RoeHack.Consoles.Logging;
+using RoeHack.Forms;
 using RoeHack.Library.Core;
 using RoeHack.Library.Core.Logging;
 using System;
@@ -7,14 +8,15 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace FileMonitor
+namespace RoeHack.Consoles
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Injector injector = new Injector();
-            //var memTest = new MemTest();
+            var logger = new ConsoleLogger(); ;
+            Injector injector = new Injector(logger);
+            //var memTest = new MemTest(logger);
 
             var processName = "Europa_Client";
 
@@ -37,13 +39,7 @@ namespace FileMonitor
             Console.ResetColor();
             Console.ReadKey(true);
 
-            try
-            {
-                injector.Close();
-            }
-            catch (System.Runtime.Remoting.RemotingException)
-            {
-            }
+            injector.Close();
 
             Console.ReadKey(true);
         }
@@ -53,9 +49,9 @@ namespace FileMonitor
     {
         private readonly ILog logger;
 
-        public MemTest()
+        public MemTest(ILog logger)
         {
-            this.logger = new ConsoleLogger(nameof(MemTest), LogLevel.Debug);
+            this.logger = logger;
         }
 
         public void Test(string processName)
@@ -65,7 +61,7 @@ namespace FileMonitor
             SaveDump(buffer);
 
             var sigEntities = new byte[] { 0x8B, 0x15, 0x00, 0x00, 0x00, 0x00, 0x3B, 0x04, 0x8A, 0x74, 0x00, 0x8B, 0x48, 0x08, 0x85, 0xC9 };
-            var maskEntities= "xx????xxxx?xxxxx";
+            var maskEntities = "xx????xxxx?xxxxx";
 
             var sigCamera = new byte[] { 0x8B, 0x0D, 0x00, 0x00, 0x00, 0x00, 0x8B, 0x11, 0xF3, 0x0F, 0x00, 0x00, 0x00, 0x00, 0x8D, 0xB3, 0x00, 0x00, 0x00, 0x00 };
             var maskCamera = "xx????xxxx????xx??xx";

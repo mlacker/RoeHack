@@ -95,10 +95,10 @@
   <ItemGroup>
     <Compile Include="Core\AppException.cs" />
     <Compile Include="Core\Logging\AbstractLogger.cs" />
-    <Compile Include="Core\Logging\ConsoleLogger.cs" />
     <Compile Include="Core\Logging\IIpcLoggerInterface.cs" />
     <Compile Include="Core\Logging\ILog.cs" />
     <Compile Include="Core\Logging\IpcConnectLogger.cs" />
+    <Compile Include="Core\Logging\LogEntry.cs" />
     <Compile Include="Core\ServerInterface.cs" />
     <Compile Include="Core\InjectEntryPoint.cs" />
     <Compile Include="DirectXHooker\DriectX11Hooker.cs" />

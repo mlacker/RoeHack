@@ -11,17 +11,16 @@ namespace RoeHack.Forms
     {
         private readonly ServerInterface server;
         private readonly ILog logger;
-        private bool injected = false;
 
-        public Injector()
+        public Injector(ILog logger)
         {
-            server = new ServerInterface();
-            logger = new ConsoleLogger("Injector", LogLevel.Debug);
+            server = new ServerInterface(logger);
+            this.logger = logger;
         }
 
         public Parameter Parameter { get; private set; } = new Parameter();
 
-        public bool Injected { get => injected; }
+        public bool Injected { get; private set; }
 
         public void Inject(string processName)
         {
@@ -36,7 +35,7 @@ namespace RoeHack.Forms
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
 
             string channelName = null;
-            RemoteHooking.IpcCreateServer<ServerInterface>(
+            RemoteHooking.IpcCreateServer(
                 ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton, server);
             Parameter.ChannelName = channelName;
 
@@ -51,7 +50,7 @@ namespace RoeHack.Forms
                     Parameter
                     );
 
-                injected = true;
+                Injected = true;
             }
             catch (Exception ex)
             {
@@ -61,9 +60,15 @@ namespace RoeHack.Forms
 
         public void Close()
         {
-            server.Close();
+            try
+            {
+                server.Close();
+            }
+            catch (System.Runtime.Remoting.RemotingException)
+            {
+            }
 
-            injected = false;
+            Injected = false;
         }
     }
 }

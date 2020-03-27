@@ -10,9 +10,9 @@ namespace RoeHack.Library.Core
     {
         private readonly ILog logger;
 
-        public ServerInterface()
+        public ServerInterface(ILog logger)
         {
-            logger = new ConsoleLogger("ServerInterface", LogLevel.Debug);
+            this.logger = logger;
         }
 
         public event OnClosedHandle OnClosed;
@@ -24,9 +24,12 @@ namespace RoeHack.Library.Core
         {
         }
 
-        public void WriteInternal(LogLevel level, string message, Exception exception)
+        public void SendLogs(LogEntry[] logs)
         {
-            logger.LogLevel(level, message, exception);
+            foreach (var log in logs)
+            {
+                logger.LogLevel(log.Level, log.Message, log.Exception);
+            }
         }
 
         public void Close()

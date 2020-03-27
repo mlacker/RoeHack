@@ -1,22 +1,18 @@
-﻿using System;
+﻿using RoeHack.Library.Core.Logging;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RoeHack.Library.Core.Logging
+namespace RoeHack.Consoles.Logging
 {
     public class ConsoleLogger : AbstractLogger
     {
         private static readonly Dictionary<LogLevel, ConsoleColor> colors = new Dictionary<LogLevel, ConsoleColor>
         {
-            { Logging.LogLevel.Error, ConsoleColor.Red },
-            { Logging.LogLevel.Info, ConsoleColor.White },
-            { Logging.LogLevel.Debug, ConsoleColor.Gray }
+            { Library.Core.Logging.LogLevel.Error, ConsoleColor.Red },
+            { Library.Core.Logging.LogLevel.Info, ConsoleColor.White },
+            { Library.Core.Logging.LogLevel.Debug, ConsoleColor.Gray }
         };
-
-        public ConsoleLogger(string logName, LogLevel logLevel)
-            : base(logName, logLevel)
-        {
-        }
 
         public override void LogLevel(LogLevel level, string message, Exception exception = null)
         {

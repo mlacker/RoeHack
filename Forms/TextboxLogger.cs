@@ -5,13 +5,12 @@ using System.Windows.Forms;
 
 namespace RoeHack.Forms
 {
-    public class TextboxLogger<T> : AbstractLogger
+    public class TextboxLogger : AbstractLogger
     {
         private readonly TextBoxBase textbox;
         private readonly int maxLength;
 
-        public TextboxLogger(TextBoxBase textbox, LogLevel logLevel)
-            : base(typeof(T).Name, logLevel)
+        public TextboxLogger(TextBoxBase textbox)
         {
             this.textbox = textbox;
             this.maxLength = textbox.MaxLength;
@@ -37,6 +36,9 @@ namespace RoeHack.Forms
             }
 
             textbox.Text = stringBuilder.ToString();
+
+            textbox.SelectionStart = textbox.Text.Length;
+            textbox.ScrollToCaret();
         }
     }
 }
