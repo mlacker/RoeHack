@@ -9,12 +9,11 @@ namespace RoeHack.Forms
 {
     public class Injector
     {
-        private readonly ServerInterface server;
         private readonly ILog logger;
+        private ClientInterface server;
 
         public Injector(ILog logger)
         {
-            server = new ServerInterface(logger);
             this.logger = logger;
         }
 
@@ -24,6 +23,9 @@ namespace RoeHack.Forms
 
         public void Inject(string processName)
         {
+            if (Injected)
+                return;
+
             var process = Process.GetProcessesByName(processName)
                 .SingleOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
 
@@ -33,6 +35,8 @@ namespace RoeHack.Forms
             }
 
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
+
+            var server = new ServerInterface(logger);
 
             string channelName = null;
             RemoteHooking.IpcCreateServer(
@@ -51,6 +55,7 @@ namespace RoeHack.Forms
                     );
 
                 Injected = true;
+                this.server = server;
             }
             catch (Exception ex)
             {
@@ -60,6 +65,9 @@ namespace RoeHack.Forms
 
         public void Close()
         {
+            if (!Injected)
+                return;
+
             try
             {
                 server.Close();
