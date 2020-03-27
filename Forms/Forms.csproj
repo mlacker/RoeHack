@@ -72,6 +72,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TextboxLogger.cs" />
     <Compile Include="DebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
