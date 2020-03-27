@@ -130,6 +130,9 @@ namespace RoeHack.Library.Core
                     case "11":
                         hooker = new DirectXHooker.DriectX11Hooker(parameter);
                         break;
+                    case "12":
+                        hooker = new DirectXHooker.DriectX12Hooker(parameter, logger);
+                        break;
                     default:
                         logger.Error($"尚未实现 DirectX{currentVersion} 版本，请联系韦大神！");
                         break;
