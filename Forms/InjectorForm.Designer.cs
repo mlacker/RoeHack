@@ -28,34 +28,41 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.btnEnable = new System.Windows.Forms.Button();
+            this.btnInjectSwitch = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // btnEnable
+            // btnInjectSwitch
             // 
-            this.btnEnable.Location = new System.Drawing.Point(253, 57);
-            this.btnEnable.Name = "btnEnable";
-            this.btnEnable.Size = new System.Drawing.Size(75, 23);
-            this.btnEnable.TabIndex = 0;
-            this.btnEnable.Text = "开启";
-            this.btnEnable.UseVisualStyleBackColor = true;
-            this.btnEnable.Click += new System.EventHandler(this.btnEnable_Click);
+            this.btnInjectSwitch.Location = new System.Drawing.Point(62, 30);
+            this.btnInjectSwitch.Name = "btnInjectSwitch";
+            this.btnInjectSwitch.Size = new System.Drawing.Size(75, 23);
+            this.btnInjectSwitch.TabIndex = 0;
+            this.btnInjectSwitch.Text = "开启";
+            this.btnInjectSwitch.Click += new System.EventHandler(this.btnInjectSwitch_Click);
             // 
             // InjectorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(443, 191);
-            this.Controls.Add(this.btnEnable);
+            this.ClientSize = new System.Drawing.Size(194, 95);
+            this.Controls.Add(this.btnInjectSwitch);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.KeyPreview = true;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "InjectorForm";
+            this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "RoeHack";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.InjectorForm_FormClosing);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.InjectorForm_KeyUp);
             this.ResumeLayout(false);
 
         }
 
         #endregion
 
-        private System.Windows.Forms.Button btnEnable;
+        private System.Windows.Forms.Button btnInjectSwitch;
     }
 }
 
