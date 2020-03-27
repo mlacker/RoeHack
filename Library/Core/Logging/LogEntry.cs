@@ -2,6 +2,7 @@
 
 namespace RoeHack.Library.Core.Logging
 {
+    [Serializable]
     public struct LogEntry
     {
         public LogEntry(LogLevel level, string message, Exception exception)
