@@ -31,7 +31,7 @@ namespace RoeHack.Library.DirectXHooker
         public delegate void DrawIndexedInstancedDelegate(IntPtr commandListPtr, int indexCountPerInstance, int instanceCount, int startIndexLocation, int baseVertexLocation, int startInstanceLocation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        public delegate void ExecuteCommandListsDelegate(IntPtr commandQueuePtr, int numCommandLists, D3D12.CommandList[] commandListsOut);
+        public delegate void ExecuteCommandListsDelegate(IntPtr commandQueuePtr, int numCommandLists, IntPtr[] commandListsOut);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
         public delegate void SignalDelegate(IntPtr commandQueuePtr, IntPtr fenceRef, long value);
@@ -52,16 +52,16 @@ namespace RoeHack.Library.DirectXHooker
 
             hookPresent = new HookWrapper<PresentDelegate>(
                 address[140], new PresentDelegate(PresentHook), this);
-            /*
+            
             hookDrawInstanced = new HookWrapper<DrawInstancedDelegate>(
                 address[84], new DrawInstancedDelegate(DrawInstancedHook), this);
-
+            
             hookDrawIndexedInstanced = new HookWrapper<DrawIndexedInstancedDelegate>(
                 address[85], new DrawIndexedInstancedDelegate(DrawIndexedInstancedHook), this);
-
+            
             hookExecuteCommandLists = new HookWrapper<ExecuteCommandListsDelegate>(
                 address[54], new ExecuteCommandListsDelegate(ExecuteCommandListsHook), this);
-            */
+            
             hookSignalDelegate = new HookWrapper<SignalDelegate>(
                 address[58], new SignalDelegate(SignalHook), this);
         }
@@ -89,7 +89,7 @@ namespace RoeHack.Library.DirectXHooker
             hookDrawIndexedInstanced.Target(commandListPtr, indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
         }
 
-        public void ExecuteCommandListsHook(IntPtr commandQueuePtr, int numCommandLists, D3D12.CommandList[] commandListsOut)
+        public void ExecuteCommandListsHook(IntPtr commandQueuePtr, int numCommandLists, IntPtr[] commandListsOut)
         {
             hookExecuteCommandLists.Target(commandQueuePtr, numCommandLists, commandListsOut);
         }
