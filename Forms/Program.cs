@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Windows.Forms;
 
 namespace RoeHack.Forms
@@ -13,7 +14,28 @@ namespace RoeHack.Forms
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new InjectorDebugForm());
+
+            var logger = new TextboxLogger();
+            var injector = new Injector(logger);
+
+            var injectorForm = new InjectorForm(injector);
+            Form injectorDebugForm = new InjectorDebugForm(injector, logger)
+            {
+                SwitchForm = injectorForm
+            };
+            injectorForm.SwitchForm = injectorDebugForm;
+
+            var startedForm = ConfigurationManager.AppSettings["StartedForm"] == "debug"
+                ? injectorDebugForm : injectorForm;
+            startedForm.Show();
+
+            Application.ApplicationExit += (object sender, EventArgs e) =>
+            {
+                if (injector.Injected)
+                    injector.Close();
+            };
+
+            Application.Run();
         }
     }
 }

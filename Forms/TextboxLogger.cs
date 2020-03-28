@@ -7,23 +7,24 @@ namespace RoeHack.Forms
 {
     public class TextboxLogger : AbstractLogger
     {
-        private readonly TextBoxBase textbox;
-        private readonly int maxLength;
-
-        public TextboxLogger(TextBoxBase textbox)
+        public TextboxLogger()
         {
-            this.textbox = textbox;
-            this.maxLength = textbox.MaxLength;
+            // Uncomment if thread exception occurs
+            Control.CheckForIllegalCrossThreadCalls = false;
         }
+
+        public TextBox Textbox { get; set; }
+
+        public int MaxLength { get => Textbox.MaxLength; }
 
         public override void LogLevel(LogLevel level, string message, Exception exception = null)
         {
-            var text = textbox.Text;
+            var text = Textbox.Text;
             var stringBuilder = new StringBuilder(
                 text,
-                Math.Max(text.Length - maxLength, 0), 
-                Math.Min(text.Length, maxLength),
-                maxLength);
+                Math.Max(text.Length - MaxLength, 0),
+                Math.Min(text.Length, MaxLength),
+                MaxLength);
 
             stringBuilder.AppendLine();
             stringBuilder.Append($"[{level.ToString().ToUpper()}]".PadRight(8));
@@ -35,10 +36,10 @@ namespace RoeHack.Forms
                     .Append(exception);
             }
 
-            textbox.Text = stringBuilder.ToString();
+            Textbox.Text = stringBuilder.ToString();
 
-            textbox.SelectionStart = textbox.Text.Length;
-            textbox.ScrollToCaret();
+            Textbox.SelectionStart = Textbox.Text.Length;
+            Textbox.ScrollToCaret();
         }
     }
 }

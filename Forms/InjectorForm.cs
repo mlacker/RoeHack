@@ -7,17 +7,15 @@ namespace RoeHack.Forms
     public partial class InjectorForm : Form
     {
         private readonly Injector injector;
-        private readonly Form injectDebugForm;
-        private readonly ILog logger;
 
-        public InjectorForm(Injector injector, Form injectDebugForm, ILog logger)
+        public InjectorForm(Injector injector)
         {
             InitializeComponent();
 
-            this.injectDebugForm = injectDebugForm;
             this.injector = injector;
-            this.logger = logger;
         }
+
+        public Form SwitchForm { get; set; }
 
         private void btnInjectSwitch_Click(object sender, EventArgs e)
         {
@@ -35,7 +33,7 @@ namespace RoeHack.Forms
 
         private void InjectorForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            injectDebugForm.Close();
+            Application.Exit();
         }
 
         private void InjectorForm_KeyUp(object sender, KeyEventArgs e)
@@ -43,13 +41,8 @@ namespace RoeHack.Forms
             if (e.KeyCode == Keys.F12)
             {
                 Hide();
-                injectDebugForm.Show();
+                SwitchForm.Show();
             }
-        }
-
-        private void InjectorForm_Shown(object sender, EventArgs e)
-        {
-            this.injectDebugForm.Hide();
         }
     }
 }

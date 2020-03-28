@@ -28,14 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.txtOutput = new System.Windows.Forms.TextBox();
             this.cbxProcess = new System.Windows.Forms.ComboBox();
             this.cbxVersion = new System.Windows.Forms.ComboBox();
             this.btnInject = new System.Windows.Forms.Button();
-            this.txtOutput = new System.Windows.Forms.TextBox();
             this.btnDetach = new System.Windows.Forms.Button();
             this.btnRefresh = new System.Windows.Forms.Button();
             this.btnClear = new System.Windows.Forms.Button();
             this.SuspendLayout();
+            // 
+            // txtOutput
+            // 
+            this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtOutput.BackColor = System.Drawing.SystemColors.Window;
+            this.txtOutput.Location = new System.Drawing.Point(12, 12);
+            this.txtOutput.Multiline = true;
+            this.txtOutput.Name = "txtOutput";
+            this.txtOutput.ReadOnly = true;
+            this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtOutput.Size = new System.Drawing.Size(480, 428);
+            this.txtOutput.TabIndex = 0;
+            this.txtOutput.TabStop = false;
             // 
             // cbxProcess
             // 
@@ -71,21 +86,6 @@
             this.btnInject.Text = "注入";
             this.btnInject.UseVisualStyleBackColor = true;
             this.btnInject.Click += new System.EventHandler(this.btnInject_Click);
-            // 
-            // txtOutput
-            // 
-            this.txtOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtOutput.BackColor = System.Drawing.SystemColors.Window;
-            this.txtOutput.Location = new System.Drawing.Point(12, 12);
-            this.txtOutput.Multiline = true;
-            this.txtOutput.Name = "txtOutput";
-            this.txtOutput.ReadOnly = true;
-            this.txtOutput.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtOutput.Size = new System.Drawing.Size(480, 428);
-            this.txtOutput.TabIndex = 0;
-            this.txtOutput.TabStop = false;
             // 
             // btnDetach
             // 
