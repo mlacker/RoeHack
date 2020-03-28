@@ -31,6 +31,7 @@ namespace RoeHack.Forms
         {
             try
             {
+                injector.Parameter.DirectXVersion = (DirectXVersion)cbxVersion.SelectedIndex;
                 injector.Inject(cbxProcess.SelectedValue.ToString());
 
                 btnInject.Enabled = false;

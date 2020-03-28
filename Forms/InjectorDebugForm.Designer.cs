@@ -68,6 +68,7 @@
             this.cbxVersion.Items.AddRange(new object[] {
             "Auto detected",
             "DirectX 9",
+            "DirectX 10",
             "DirectX 11",
             "DirectX 12"});
             this.cbxVersion.Location = new System.Drawing.Point(500, 38);
