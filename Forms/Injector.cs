@@ -114,7 +114,7 @@ namespace RoeHack.Forms
                         break;
                 }
             }
-            
+
             if (versions.Count() > 0)
             {
                 logger.Debug($"The version of the process available has been detected: {string.Join(", ", versions)}.");
