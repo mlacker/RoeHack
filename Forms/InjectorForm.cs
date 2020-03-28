@@ -1,4 +1,4 @@
-﻿using RoeHack.Library.Core.Logging;
+﻿using RoeHack.Library.Core;
 using System;
 using System.Windows.Forms;
 
@@ -21,8 +21,15 @@ namespace RoeHack.Forms
         {
             if (!injector.Injected)
             {
-                injector.Inject("Europa_Client");
-                btnInjectSwitch.Text = "关闭";
+                try
+                {
+                    injector.Inject("Europa_Client");
+                    btnInjectSwitch.Text = "关闭";
+                }
+                catch (AppException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
             else
             {

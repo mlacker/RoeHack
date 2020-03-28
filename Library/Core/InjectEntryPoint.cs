@@ -40,7 +40,7 @@ namespace RoeHack.Library.Core
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
-            logger.Info($"已成功注入进程 {RemoteHooking.GetCurrentProcessId()}.");
+            logger.Info($"Injector has injected payload into process {RemoteHooking.GetCurrentProcessId()}.");
 
             hooker?.Hooking();
 
@@ -53,7 +53,7 @@ namespace RoeHack.Library.Core
 
             Dispose();
 
-            logger.Info("注入已分离.");
+            logger.Info("Injection already detached.");
 
             // Waiting the message send to client
             Thread.Sleep(300);
@@ -67,7 +67,7 @@ namespace RoeHack.Library.Core
             // Finalise cleanup of hooks
             LocalHook.Release();
 
-            logger.Debug("资源已成功释放.");
+            logger.Debug("Resources has benn released.");
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace RoeHack.Library.Core
                 .Select(it => it.Key);
 
             if (checkedVersions.Count() > 0)
-                logger.Debug($"已检测到进程可用的驱动版本：{string.Join(", ", checkedVersions)}.");
+                logger.Debug($"The driver version of the process available has been detected：{string.Join(", ", checkedVersions)}.");
 
             var currentVersion = checkedVersions
                 .LastOrDefault();
@@ -123,7 +123,7 @@ namespace RoeHack.Library.Core
             IDirectXHooker hooker = null;
             if (currentVersion != null)
             {
-                logger.Debug($"当前驱动版本为 {currentVersion}.");
+                logger.Debug($"Current DirectX version is {currentVersion}.");
 
                 switch (currentVersion)
                 {
@@ -137,13 +137,13 @@ namespace RoeHack.Library.Core
                         hooker = new DirectXHooker.DriectX12Hooker(parameter, logger);
                         break;
                     default:
-                        logger.Error($"尚未实现 DirectX{currentVersion} 版本，请联系韦大神！");
+                        logger.Error($"Unknown {currentVersion} version of DirectX.");
                         break;
                 }
             }
             else
             {
-                logger.Error($"未检测到目标进程对应的 DirectX 版本.");
+                logger.Error($"The DirectX version of the target process was not detected.");
             }
 
             return hooker;

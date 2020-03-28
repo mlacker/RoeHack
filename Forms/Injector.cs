@@ -31,6 +31,7 @@ namespace RoeHack.Forms
 
             if (!RemoteHooking.IsAdministrator)
             {
+                // Please run the program as an administrator
                 throw new AppException("请以管理员身份运行程序.");
             }
 
@@ -45,7 +46,7 @@ namespace RoeHack.Forms
 
             try
             {
-                logger.Info($"尝试注入目标进程 {process.ProcessName}({process.Id})");
+                logger.Info($"Attemption to inject into process {process.ProcessName}({process.Id})");
 
                 RemoteHooking.Inject(
                     process.Id,
@@ -59,7 +60,7 @@ namespace RoeHack.Forms
             }
             catch (Exception ex)
             {
-                logger.Error("向目标注入时有一个错误：", ex);
+                logger.Error("There was an error while injecting into target:", ex);
             }
         }
 

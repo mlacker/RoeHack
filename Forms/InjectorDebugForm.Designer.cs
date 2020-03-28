@@ -83,7 +83,7 @@
             this.btnInject.Name = "btnInject";
             this.btnInject.Size = new System.Drawing.Size(80, 23);
             this.btnInject.TabIndex = 3;
-            this.btnInject.Text = "注入";
+            this.btnInject.Text = "Inject";
             this.btnInject.UseVisualStyleBackColor = true;
             this.btnInject.Click += new System.EventHandler(this.btnInject_Click);
             // 
@@ -95,7 +95,7 @@
             this.btnDetach.Name = "btnDetach";
             this.btnDetach.Size = new System.Drawing.Size(80, 23);
             this.btnDetach.TabIndex = 4;
-            this.btnDetach.Text = "分离";
+            this.btnDetach.Text = "Detach";
             this.btnDetach.Click += new System.EventHandler(this.btnDetach_Click);
             // 
             // btnRefresh
@@ -105,7 +105,7 @@
             this.btnRefresh.Name = "btnRefresh";
             this.btnRefresh.Size = new System.Drawing.Size(80, 23);
             this.btnRefresh.TabIndex = 5;
-            this.btnRefresh.Text = "刷新";
+            this.btnRefresh.Text = "Refresh";
             this.btnRefresh.Click += new System.EventHandler(this.btnRefresh_Click);
             // 
             // btnClear
@@ -115,7 +115,7 @@
             this.btnClear.Name = "btnClear";
             this.btnClear.Size = new System.Drawing.Size(80, 23);
             this.btnClear.TabIndex = 6;
-            this.btnClear.Text = "清空";
+            this.btnClear.Text = "Clear";
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             // 
             // InjectorDebugForm
