@@ -35,23 +35,26 @@ namespace RoeHack.Library.Core
 
             server.Ping();
 
-            hooker = GetCurrentVerionDirectX(parameter);
+            hooker = GetHooker(parameter);
         }
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
             logger.Info($"Injector has injected payload into process {RemoteHooking.GetCurrentProcessId()}.");
 
-            hooker?.Hooking();
+            if (hooker != null)
+            {
+                hooker.Hooking();
 
-            server.OnClosed += proxy.Close;
-            proxy.OnClosed += OnClosed;
+                server.OnClosed += proxy.Close;
+                proxy.OnClosed += OnClosed;
 
-            logger.Debug("All hooks installed");
+                logger.Debug("All hooks installed");
 
-            BlockedCheckStatus();
+                BlockedCheckStatus();
 
-            Dispose();
+                Dispose();
+            }
 
             logger.Info("Injection already detached.");
 
@@ -62,7 +65,7 @@ namespace RoeHack.Library.Core
         public void Dispose()
         {
             // Remove hooks
-            hooker?.Dispose();
+            hooker.Dispose();
 
             // Finalise cleanup of hooks
             LocalHook.Release();
@@ -97,53 +100,23 @@ namespace RoeHack.Library.Core
             isClosed = true;
         }
 
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        private IDirectXHooker GetCurrentVerionDirectX(Parameter parameter)
+        private IDirectXHooker GetHooker(Parameter parameter)
         {
-            var versions = new System.Collections.Generic.Dictionary<string, string>()
-            {
-                { "9", "d3d9.dll" },
-                { "10", "d3d10.dll" },
-                { "10_1", "d3d10_1.dll" },
-                { "11", "d3d11.dll" },
-                { "12", "d3d12.dll" }
-            };
-            var checkedVersions = versions
-                .Where(it => GetModuleHandle(it.Value) != IntPtr.Zero)
-                .Select(it => it.Key);
-
-            if (checkedVersions.Count() > 0)
-                logger.Debug($"The driver version of the process available has been detected：{string.Join(", ", checkedVersions)}.");
-
-            var currentVersion = checkedVersions
-                .LastOrDefault();
-
             IDirectXHooker hooker = null;
-            if (currentVersion != null)
+            switch (parameter.DirectXVersion)
             {
-                logger.Debug($"Current DirectX version is {currentVersion}.");
-
-                switch (currentVersion)
-                {
-                    case "9":
-                        hooker = new DirectXHooker.DriectX9Hooker(parameter, logger);
-                        break;
-                    case "11":
-                        hooker = new DirectXHooker.DriectX11Hooker(parameter);
-                        break;
-                    case "12":
-                        hooker = new DirectXHooker.DriectX12Hooker(parameter, logger);
-                        break;
-                    default:
-                        logger.Error($"Unknown {currentVersion} version of DirectX.");
-                        break;
-                }
-            }
-            else
-            {
-                logger.Error($"The DirectX version of the target process was not detected.");
+                case DirectXVersion.D3D9:
+                    hooker = new DirectXHooker.DriectX9Hooker(parameter, logger);
+                    break;
+                case DirectXVersion.D3D11:
+                    hooker = new DirectXHooker.DriectX11Hooker(parameter);
+                    break;
+                case DirectXVersion.D3D12:
+                    hooker = new DirectXHooker.DriectX12Hooker(parameter, logger);
+                    break;
+                default:
+                    logger.Error($"Unknown {parameter.DirectXVersion} version of DirectX.");
+                    break;
             }
 
             return hooker;

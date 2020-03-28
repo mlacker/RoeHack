@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using RoeHack.Library.Core;
 using RoeHack.Library.Core.Logging;
 
 namespace RoeHack.Forms
@@ -28,10 +29,16 @@ namespace RoeHack.Forms
 
         private void btnInject_Click(object sender, EventArgs e)
         {
-            injector.Inject(cbxProcess.SelectedValue.ToString());
+            try
+            {
+                injector.Inject(cbxProcess.SelectedValue.ToString());
 
-            btnInject.Enabled = false;
-            btnDetach.Enabled = true;
+                btnInject.Enabled = false;
+                btnDetach.Enabled = true;
+            }
+            catch (AppException)
+            {
+            }
         }
 
         private void btnDetach_Click(object sender, EventArgs e)

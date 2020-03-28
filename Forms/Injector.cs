@@ -2,6 +2,7 @@
 using RoeHack.Library.Core;
 using RoeHack.Library.Core.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -27,13 +28,19 @@ namespace RoeHack.Forms
                 return;
 
             var process = Process.GetProcessesByName(processName)
-                .SingleOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
+                .FirstOrDefault() ?? throw new AppException($"无法找到正在运行的 {processName} 应用.");
 
             if (!RemoteHooking.IsAdministrator)
             {
                 // Please run the program as an administrator
                 throw new AppException("请以管理员身份运行程序.");
             }
+
+            if (Parameter.DirectXVersion == DirectXVersion.Unkonwn)
+            {
+                Parameter.DirectXVersion = GetCurrentDirectXVerion(process);
+            }
+            logger.Info($"Current DirectX version is {Parameter.DirectXVersion}.");
 
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
 
@@ -78,6 +85,47 @@ namespace RoeHack.Forms
             }
 
             Injected = false;
+        }
+
+        private DirectXVersion GetCurrentDirectXVerion(Process process)
+        {
+            var versions = new HashSet<DirectXVersion>();
+            // If run as x64 mode, cannot found d3d module.
+            foreach (var module in process.Modules.Cast<ProcessModule>())
+            {
+                switch (module.ModuleName)
+                {
+                    case "d3d9.dll":
+                        versions.Add(DirectXVersion.D3D9);
+                        break;
+                    case "d3d10.dll":
+                        versions.Add(DirectXVersion.D3D10);
+                        break;
+                    case "d3d10_1.dll":
+                        versions.Add(DirectXVersion.D3D10);
+                        break;
+                    case "d3d11.dll":
+                        versions.Add(DirectXVersion.D3D11);
+                        break;
+                    case "d3d12.dll":
+                        versions.Add(DirectXVersion.D3D12);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
+            if (versions.Count() > 0)
+            {
+                logger.Debug($"The version of the process available has been detected: {string.Join(", ", versions)}.");
+            }
+            else
+            {
+                logger.Error($"The available version of the target process was not detected.");
+                throw new AppException("目标进程未检测到可用的驱动版本");
+            }
+
+            return versions.OrderBy(m => m).LastOrDefault();
         }
     }
 }

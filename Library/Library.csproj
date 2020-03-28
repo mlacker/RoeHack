@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AppException.cs" />
+    <Compile Include="Core\DirectXVersion.cs" />
     <Compile Include="Core\Logging\AbstractLogger.cs" />
     <Compile Include="Core\Logging\IIpcLoggerInterface.cs" />
     <Compile Include="Core\Logging\ILog.cs" />

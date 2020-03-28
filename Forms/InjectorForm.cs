@@ -23,6 +23,7 @@ namespace RoeHack.Forms
             {
                 try
                 {
+                    injector.Parameter.DirectXVersion = DirectXVersion.D3D9;
                     injector.Inject("Europa_Client");
                     btnInjectSwitch.Text = "关闭";
                 }
