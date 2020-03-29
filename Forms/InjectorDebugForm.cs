@@ -37,8 +37,9 @@ namespace RoeHack.Forms
                 btnInject.Enabled = false;
                 btnDetach.Enabled = true;
             }
-            catch (AppException)
+            catch (AppException ex)
             {
+                logger.Error(ex.Message);
             }
         }
 

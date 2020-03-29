@@ -22,6 +22,7 @@ namespace RoeHack.Consoles
 
             try
             {
+                injector.Parameter.DirectXVersion = DirectXVersion.D3D9;
                 injector.Inject(processName);
 
                 //memTest.Test(processName);
