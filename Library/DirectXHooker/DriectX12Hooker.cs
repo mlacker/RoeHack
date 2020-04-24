@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using SharpDX.DXGI;
 
 using D3D12 = SharpDX.Direct3D12;
+using SharpDX.Direct3D12;
 
 namespace RoeHack.Library.DirectXHooker
 {
@@ -197,7 +198,89 @@ namespace RoeHack.Library.DirectXHooker
 
         public void DrawIndexedInstancedHook(IntPtr commandListPtr, int indexCountPerInstance, int instanceCount, int startIndexLocation, int baseVertexLocation, int startInstanceLocation)
         {
+            try
+            {
+
+
+                GraphicsCommandList commandList = (GraphicsCommandList)commandListPtr;
+                if (!init)
+                {
+                    commandList.GetDevice(SharpDX.Utilities.GetGuidFromType(typeof(D3D12.Device)), out IntPtr devicePtr);
+
+                    device = (D3D12.Device)devicePtr;
+                    GetPipelineState();
+                    init = true;
+                }
+                if (device != null)
+                {
+                    commandList.PipelineState = pipelineState;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error("ce", ex);
+            }
             hookDrawIndexedInstanced.Target(commandListPtr, indexCountPerInstance, instanceCount, startIndexLocation, baseVertexLocation, startInstanceLocation);
+        }
+
+        PipelineState pipelineState;
+        void GetPipelineState()
+        {
+
+            DescriptorRange[] ranges = new DescriptorRange[] { new DescriptorRange() { RangeType = DescriptorRangeType.ConstantBufferView, BaseShaderRegister = 0, DescriptorCount = 1 } };
+            RootParameter parameter = new RootParameter(ShaderVisibility.Vertex, ranges);
+
+            // Create a root signature.
+            RootSignatureDescription rootSignatureDesc = new RootSignatureDescription(RootSignatureFlags.AllowInputAssemblerInputLayout, new RootParameter[] { parameter });
+            var rootSignature = device.CreateRootSignature(rootSignatureDesc.Serialize());
+
+            // Create the pipeline state, which includes compiling and loading shaders.
+            string filePath = @"E:\Code\ROE1\RoeHack-master\Forms\bin\Debug\DirectXHooker\shaders.hlsl";
+
+#if DEBUG
+            var vertexShader = new ShaderBytecode(SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(filePath, "VSMain", "vs_5_0", SharpDX.D3DCompiler.ShaderFlags.Debug));
+#else
+            var vertexShader = new ShaderBytecode(SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile("filePath, "VSMain", "vs_5_0"));
+#endif
+
+#if DEBUG
+            var pixelShader = new ShaderBytecode(SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(filePath, "PSMain", "ps_5_0", SharpDX.D3DCompiler.ShaderFlags.Debug));
+#else
+            var pixelShader = new ShaderBytecode(SharpDX.D3DCompiler.ShaderBytecode.CompileFromFile(filePath, "PSMain", "ps_5_0"));
+#endif
+           
+
+
+
+            // Define the vertex input layout.
+            InputElement[] inputElementDescs = new InputElement[]
+            {
+                    new InputElement("POSITION",0,Format.R32G32B32_Float,0,0),
+                    new InputElement("COLOR",0,Format.R32G32B32A32_Float,12,0)
+            };
+
+            // Describe and create the graphics pipeline state object (PSO).
+            GraphicsPipelineStateDescription psoDesc = new GraphicsPipelineStateDescription()
+            {
+                InputLayout = new InputLayoutDescription(inputElementDescs),
+                RootSignature = rootSignature,
+                VertexShader = vertexShader,
+                PixelShader = pixelShader,
+                RasterizerState = RasterizerStateDescription.Default(),
+                BlendState = BlendStateDescription.Default(),
+                DepthStencilFormat = SharpDX.DXGI.Format.D32_Float,
+                DepthStencilState = DepthStencilStateDescription.Default(),
+                SampleMask = int.MaxValue,
+                PrimitiveTopologyType = PrimitiveTopologyType.Triangle,
+                RenderTargetCount = 1,
+                Flags = PipelineStateFlags.None,
+                SampleDescription = new SharpDX.DXGI.SampleDescription(1, 0),
+                StreamOutput = new StreamOutputDescription()
+
+            };
+            psoDesc.DepthStencilState.IsDepthEnabled = false;
+            psoDesc.RenderTargetFormats[0] = SharpDX.DXGI.Format.R8G8B8A8_UNorm;
+            pipelineState = device.CreateGraphicsPipelineState(psoDesc);
         }
 
         public void ExecuteCommandListsHook(IntPtr commandQueuePtr, int numCommandLists, D3D12.CommandList[] commandListsOut)
