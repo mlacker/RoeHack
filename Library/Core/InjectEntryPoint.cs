@@ -12,7 +12,7 @@ namespace RoeHack.Library.Core
     public class InjectEntryPoint : IEntryPoint, IDisposable
     {
         private readonly ServerInterface server;
-        private readonly ServerInterfaceEventProxy proxy;
+        private readonly ClientInterfaceEventProxy proxy;
         private readonly IpcConnectLogger logger;
         private readonly IDirectXHooker hooker;
         private bool isClosed = false;
@@ -29,44 +29,48 @@ namespace RoeHack.Library.Core
                 });
             ChannelServices.RegisterChannel(channel, false);
 
-            proxy = new ServerInterfaceEventProxy();
+            proxy = new ClientInterfaceEventProxy();
 
             logger = new IpcConnectLogger(server);
 
             server.Ping();
 
-            hooker = GetCurrentVerionDirectX(parameter);
+            hooker = GetHooker(parameter);
         }
 
         public void Run(RemoteHooking.IContext context, Parameter parameter)
         {
-            logger.Info($"已成功注入进程 {RemoteHooking.GetCurrentProcessId()}.");
+            logger.Info($"Injector has injected payload into process {RemoteHooking.GetCurrentProcessId()}.");
 
-            hooker?.Hooking();
+            if (hooker != null)
+            {
+                hooker.Hooking();
 
-            server.OnClosed += proxy.Close;
-            proxy.OnClosed += OnClosed;
+                server.OnClosed += proxy.Close;
+                proxy.OnClosed += OnClosed;
 
-            logger.Debug("All hooks installed");
+                logger.Debug("All hooks installed");
 
-            BlockedCheckStatus();
+                BlockedCheckStatus();
 
-            Dispose();
+                Dispose();
+            }
 
-            logger.Info("注入已分离.");
+            logger.Info("Injection already detached.");
+
+            // Waiting the message send to client
+            Thread.Sleep(300);
         }
 
         public void Dispose()
         {
             // Remove hooks
-            hooker?.Dispose();
+            hooker.Dispose();
 
             // Finalise cleanup of hooks
             LocalHook.Release();
 
-            server.OnClosed -= proxy.Close;
-
-            logger.Debug("资源已成功释放.");
+            logger.Debug("Resources has benn released.");
         }
 
         /// <summary>
@@ -82,10 +86,12 @@ namespace RoeHack.Library.Core
 
                     server.Ping();
                 }
+
+                server.OnClosed -= proxy.Close;
             }
             catch
             {
-                // Ping() or ReportMessages() will raise an exception if host is unreachable
+                // Ping() will raise an exception if host is unreachable
             }
         }
 
@@ -94,50 +100,23 @@ namespace RoeHack.Library.Core
             isClosed = true;
         }
 
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        private IDirectXHooker GetCurrentVerionDirectX(Parameter parameter)
+        private IDirectXHooker GetHooker(Parameter parameter)
         {
-            var versions = new System.Collections.Generic.Dictionary<string, string>()
-            {
-                { "9", "d3d9.dll" },
-                { "10", "d3d10.dll" },
-                { "10_1", "d3d10_1.dll" },
-                { "11", "d3d11.dll" },
-                { "12", "d3d12.dll" }
-            };
-            var checkedVersions = versions
-                .Where(it => GetModuleHandle(it.Value) != IntPtr.Zero)
-                .Select(it => it.Key);
-
-            if (checkedVersions.Count() > 0)
-                logger.Debug($"已检测到进程可用的驱动版本：{string.Join(", ", checkedVersions)}.");
-
-            var currentVersion = checkedVersions
-                .FirstOrDefault();
-
             IDirectXHooker hooker = null;
-            if (currentVersion != null)
+            switch (parameter.DirectXVersion)
             {
-                logger.Debug($"当前驱动版本为 {currentVersion}.");
-
-                switch (currentVersion)
-                {
-                    case "9":
-                        hooker = new DirectXHooker.DriectX9Hooker(parameter, logger);
-                        break;
-                    case "11":
-                        hooker = new DirectXHooker.DriectX11Hooker(parameter);
-                        break;
-                    default:
-                        logger.Error($"尚未实现 DirectX{currentVersion} 版本，请联系韦大神！");
-                        break;
-                }
-            }
-            else
-            {
-                logger.Error($"未检测到目标进程对应的 DirectX 版本.");
+                case DirectXVersion.D3D9:
+                    hooker = new DirectXHooker.DriectX9Hooker(parameter, logger);
+                    break;
+                case DirectXVersion.D3D11:
+                    hooker = new DirectXHooker.DriectX11Hooker(parameter);
+                    break;
+                case DirectXVersion.D3D12:
+                    hooker = new DirectXHooker.DriectX12Hooker(parameter, logger);
+                    break;
+                default:
+                    logger.Error($"Unknown {parameter.DirectXVersion} version of DirectX.");
+                    break;
             }
 
             return hooker;

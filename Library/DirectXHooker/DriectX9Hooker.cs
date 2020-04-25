@@ -20,7 +20,7 @@ namespace RoeHack.Library.DirectXHooker
         private HookWrapper<DrawIndexedPrimitiveDelegate> hookDrawIndexedPrimitive;
         private HookWrapper<PresentDelegate> hookPresent;
 
-        private bool firsted = true;
+        private bool initOnce = true;
 
         private Texture textureBack;
         private Texture textureFront;
@@ -90,17 +90,17 @@ namespace RoeHack.Library.DirectXHooker
                 
                 device.SetRenderState(RenderState.DepthBias, 0.000001f);
                 device.SetTexture(0, textureFront);
-                hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
             }
+
             return hookDrawIndexedPrimitive.Target(devicePtr, arg0, baseVertexIndex, minVertexIndex, numVertices, startIndex, primCount);
         }
 
         public int PresentHook(IntPtr devicePtr, SharpDX.Rectangle[] pSourceRect, SharpDX.Rectangle[] pDestRect, IntPtr hDestWindowOverride, IntPtr pDirtyRegion)
         {
-            if (firsted)
+            if (initOnce)
             {
-                firsted = false;
                 SetColor(devicePtr);
+                initOnce = false;
             }
             //DoCapture((Device)devicePtr);
             return hookPresent.Target(devicePtr, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
@@ -230,7 +230,34 @@ namespace RoeHack.Library.DirectXHooker
             return default(T);
         }
 
+        struct Element
+        {
+            public int numVertices;
+            public int primCount;
 
+            public Element(int numVertices, int primCount)
+            {
+                this.numVertices = numVertices;
+                this.primCount = primCount;
+            }
+
+            public override string ToString()
+            {
+                return $"NumVertices: {numVertices}, PrimCount: {primCount}";
+            }
+        }
+
+        private List<Element> elements = new List<Element>()
+        {
+            // 雪地滑翔翼背包
+            new Element(1791, 2934),
+            // 海岛滑翔翼背包
+            new Element(2006, 3100),
+            // 自行车背包, 滑雪背包
+            new Element(4127, 4458),
+            // 抓钩背包, 登山背包
+            new Element(4313, 6517),
+        };
 
         private bool IsPlayers(int stride, int vSize, int numVertices, int primCount)
         {
@@ -246,14 +273,14 @@ namespace RoeHack.Library.DirectXHooker
         {
             int _texWidth = 1, _texHeight = 1;
             Bitmap bmFront = new Bitmap(_texWidth, _texHeight);
-            Graphics gFront = Graphics.FromImage(bmFront); //创建b1的Graphics
-            gFront.FillRectangle(Brushes.Blue, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            Graphics gFront = Graphics.FromImage(bmFront);
+            gFront.FillRectangle(Brushes.Blue, new Rectangle(0, 0, _texWidth, _texHeight));
             string fileNameFront = "..//Front.jpg";
             bmFront.Save(fileNameFront);
 
             Bitmap bmBack = new Bitmap(_texWidth, _texHeight);
-            Graphics gBack = Graphics.FromImage(bmBack); //创建b1的Graphics
-            gBack.FillRectangle(Brushes.Red, new System.Drawing.Rectangle(0, 0, _texWidth, _texHeight));
+            Graphics gBack = Graphics.FromImage(bmBack);
+            gBack.FillRectangle(Brushes.Red, new Rectangle(0, 0, _texWidth, _texHeight));
             string fileNameBack = "..//back.jpg";
             bmBack.Save(fileNameBack);
 

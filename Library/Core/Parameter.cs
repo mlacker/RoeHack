@@ -6,5 +6,7 @@ namespace RoeHack.Library.Core
     public class Parameter
     {
         public string ChannelName { get; set; }
+
+        public DirectXVersion DirectXVersion { get; set; }
     }
 }
