@@ -60,7 +60,19 @@ namespace RoeHack.Library.DirectXHooker
             device.GetStreamSource(0, out var streamData, out var offsetInBytes, out var stride);
             streamData?.Dispose();
 
-            if (IsPlayers(stride, numVertices, primCount))
+            var vertexSize = 0;
+            var vShader = device.VertexShader;
+            if (vShader != null)
+            {
+                if (vShader.Function.BufferSize != null)
+                {
+                    vertexSize = vShader.Function.BufferSize;
+                    vShader.Function.Dispose();
+                }
+                vShader.Dispose();
+            }
+
+            if (IsPlayers(stride, vertexSize, numVertices, primCount))
             {
                 device.SetTexture(0, textureBack);
                 device.SetRenderState(RenderState.ZEnable, false);
@@ -114,21 +126,10 @@ namespace RoeHack.Library.DirectXHooker
             new Element(4313, 6517),
         };
 
-        private bool IsPlayers(int stride, int numVertices, int primCount)
+        private bool IsPlayers(int stride, int vertexSize, int numVertices, int primCount)
         {
-            var element = new Element(numVertices, primCount);
-
-            if (stride == 72)
+            if (stride == 72 && vertexSize > 3000 && vertexSize < 3525)
             {
-                if (elements.Contains(element))
-                {
-                }
-                else
-                {
-                    //elements.Add(element);
-                    //logger.Debug(element.ToString());
-                }
-
                 return true;
             }
 
@@ -140,7 +141,7 @@ namespace RoeHack.Library.DirectXHooker
             int _texWidth = 1, _texHeight = 1;
             Bitmap bmFront = new Bitmap(_texWidth, _texHeight);
             Graphics gFront = Graphics.FromImage(bmFront);
-            gFront.FillRectangle(Brushes.Gold, new Rectangle(0, 0, _texWidth, _texHeight));
+            gFront.FillRectangle(Brushes.Blue, new Rectangle(0, 0, _texWidth, _texHeight));
             string fileNameFront = "..//Front.jpg";
             bmFront.Save(fileNameFront);
 
