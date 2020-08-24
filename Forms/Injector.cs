@@ -1,10 +1,12 @@
 ﻿using EasyHook;
 using RoeHack.Library.Core;
 using RoeHack.Library.Core.Logging;
+using SharpDX.Direct3D9;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace RoeHack.Forms
 {
@@ -41,6 +43,11 @@ namespace RoeHack.Forms
                 Parameter.DirectXVersion = GetCurrentDirectXVerion(process);
             }
             logger.Info($"Current DirectX version is {Parameter.DirectXVersion}.");
+
+            if (Parameter.DirectXVersion == DirectXVersion.D3D9)
+            {
+                Parameter.ProcAddress = GetAddress();
+            }
 
             var injectionLibrary = typeof(InjectEntryPoint).Assembly.Location;
 
@@ -126,6 +133,22 @@ namespace RoeHack.Forms
             }
 
             return versions.OrderBy(m => m).LastOrDefault();
+        }
+
+        private List<IntPtr> GetAddress()
+        {
+            var address = new List<IntPtr>();
+
+            using (var d3d = new Direct3D())
+            using (var renderForm = new System.Windows.Forms.Form())
+            using (var device = new Device(d3d, 0, DeviceType.NullReference, IntPtr.Zero, CreateFlags.HardwareVertexProcessing, new PresentParameters() { BackBufferWidth = 1, BackBufferHeight = 1, DeviceWindowHandle = renderForm.Handle }))
+            {
+                IntPtr vTable = Marshal.ReadIntPtr(device.NativePointer);
+                for (int i = 0; i < 119; i++)
+                    address.Add(Marshal.ReadIntPtr(vTable, i * IntPtr.Size));
+            }
+
+            return address;
         }
     }
 }

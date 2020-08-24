@@ -44,13 +44,11 @@ namespace RoeHack.Library.DirectXHooker
 
         public void Hooking()
         {
-            var address = GetAddress();
-
             hookDrawIndexedPrimitive = new HookWrapper<DrawIndexedPrimitiveDelegate>(
-                address[82], new DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
+                parameter.ProcAddress[82], new DrawIndexedPrimitiveDelegate(DrawIndexedPrimitiveHook), this);
 
             hookPresent = new HookWrapper<PresentDelegate>(
-                address[17], new PresentDelegate(PresentHook), this);
+                parameter.ProcAddress[17], new PresentDelegate(PresentHook), this);
         }
 
         public int DrawIndexedPrimitiveHook(IntPtr devicePtr, PrimitiveType arg0, int baseVertexIndex, int minVertexIndex, int numVertices, int startIndex, int primCount)
@@ -138,22 +136,17 @@ namespace RoeHack.Library.DirectXHooker
 
         private void SetColor(IntPtr devicePtr)
         {
-            int _texWidth = 1, _texHeight = 1;
-            Bitmap bmFront = new Bitmap(_texWidth, _texHeight);
-            Graphics gFront = Graphics.FromImage(bmFront);
-            gFront.FillRectangle(Brushes.Blue, new Rectangle(0, 0, _texWidth, _texHeight));
-            string fileNameFront = "..//Front.jpg";
-            bmFront.Save(fileNameFront);
+            string filename = "bitmap.png";
+            Bitmap bitmap = new Bitmap(1, 1);
+            Graphics graphics = Graphics.FromImage(bitmap);
 
-            Bitmap bmBack = new Bitmap(_texWidth, _texHeight);
-            Graphics gBack = Graphics.FromImage(bmBack);
-            gBack.FillRectangle(Brushes.Red, new Rectangle(0, 0, _texWidth, _texHeight));
-            string fileNameBack = "..//back.jpg";
-            bmBack.Save(fileNameBack);
+            graphics.FillRectangle(Brushes.Blue, new Rectangle(0, 0, 1, 1));
+            bitmap.Save(filename);
+            textureBack = Texture.FromFile((Device)devicePtr, filename);
 
-            textureBack = Texture.FromFile((Device)devicePtr, fileNameFront);
-            textureFront = Texture.FromFile((Device)devicePtr, fileNameBack);
-
+            graphics.FillRectangle(Brushes.Red, new Rectangle(0, 0, 1, 1));
+            bitmap.Save(filename);
+            textureFront = Texture.FromFile((Device)devicePtr, filename);
         }
 
         public void Dispose()
@@ -161,25 +154,5 @@ namespace RoeHack.Library.DirectXHooker
             hookDrawIndexedPrimitive.Dispose();
             hookPresent.Dispose();
         }
-
-        #region Moved
-
-        private List<IntPtr> GetAddress()
-        {
-            var address = new List<IntPtr>();
-
-            using (var d3d = new Direct3D())
-            using (var renderForm = new Form())
-            using (var device = new Device(d3d, 0, DeviceType.NullReference, IntPtr.Zero, CreateFlags.HardwareVertexProcessing, new PresentParameters() { BackBufferWidth = 1, BackBufferHeight = 1, DeviceWindowHandle = renderForm.Handle }))
-            {
-                IntPtr vTable = Marshal.ReadIntPtr(device.NativePointer);
-                for (int i = 0; i < 119; i++)
-                    address.Add(Marshal.ReadIntPtr(vTable, i * IntPtr.Size));
-            }
-
-            return address;
-        }
-
-        #endregion
     }
 }
